@@ -1,0 +1,24 @@
+[project]
+name = "flight-track-viewer"
+version = "0.1.0"
+description = "Visualize and analyze flight tracks from CSV data."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+dependencies = [
+  "numpy>=1.24",
+  "pandas>=2.0",
+  "matplotlib>=3.7",
+  "imageio>=2.34",
+  "imageio-ffmpeg>=0.5",
+]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

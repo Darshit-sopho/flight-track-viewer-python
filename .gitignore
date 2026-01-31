@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.env
+.venv/
+venv/
+.DS_Store
+.idea/
+.vscode/
+build/
+src/flight_track_viewer.egg-info/
