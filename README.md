@@ -37,7 +37,7 @@ A Python toolkit for visualizing and analyzing flight tracks from CSV data. Desi
 Clone or download the repository:
 
 ```bash
-git clone https://github.com/yourusername/flight-track-viewer-python.git
+git clone https://github.com/Darshit-sopho/flight-track-viewer-python.git
 cd flight-track-viewer-python
 ```
 
