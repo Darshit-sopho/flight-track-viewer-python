@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import contextily as cx
 
 
 def plot_map(d: dict, cfg):
@@ -11,7 +12,7 @@ def plot_map(d: dict, cfg):
         plt.close(fig)
 
     ax = fig.add_subplot(111)
-    ax.plot(d["lon"], d["lat"], linewidth=1.8, label="Track")
+    ax.plot(d["lon"], d["lat"], linewidth=2.5, color="black", label="Track")
     ax.plot(cfg.ref_lon, cfg.ref_lat, marker="o", markersize=8, label="Ref")
 
     if d.get("i_liftoff") is not None and d.get("i_touchdown") is not None and len(d.get("alt", [])) > 0:
@@ -30,4 +31,11 @@ def plot_map(d: dict, cfg):
     ax.set_title("Flight track")
     ax.grid(True)
     ax.legend(loc="best")
+    try:
+        # 'crs' tells contextily your data is in Latitude/Longitude (WGS84)
+        # It will automatically fetch map tiles and match them to your track.
+        cx.add_basemap(ax, crs='EPSG:4326', source=cx.providers.OpenStreetMap.Mapnik)
+    except Exception as e:
+        print(f"Could not load map background: {e}")
+
     return fig

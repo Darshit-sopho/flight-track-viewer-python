@@ -23,6 +23,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from io import BytesIO
+import contextily as cx
 
 # Import your flight track viewer functions
 try:
@@ -83,6 +84,12 @@ class AnimationCanvas(FigureCanvas):
         self.ax.set_xlabel("Longitude")
         self.ax.set_ylabel("Latitude")
         self.ax.grid(True, alpha=0.3)
+        try:
+            # 'crs' tells contextily your data is in Latitude/Longitude (WGS84)
+            # It will automatically fetch map tiles and match them to your track.
+            cx.add_basemap(self.ax, crs='EPSG:4326', source=cx.providers.OpenStreetMap.Mapnik)
+        except Exception as e:
+            print(f"Could not load map background: {e}")
         
         self.flight_line = None
         self.current_pos_marker = None
@@ -119,6 +126,12 @@ class AnimationCanvas(FigureCanvas):
             self.ax.set_ylabel("Latitude")
             self.ax.grid(True, alpha=0.3)
             self.ax.legend(loc='upper right')
+            try:
+                # 'crs' tells contextily your data is in Latitude/Longitude (WGS84)
+                # It will automatically fetch map tiles and match them to your track.
+                cx.add_basemap(self.ax, crs='EPSG:4326', source=cx.providers.OpenStreetMap.Mapnik)
+            except Exception as e:
+                print(f"Could not load map background: {e}")
             
             self.draw()
     

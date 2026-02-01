@@ -7,6 +7,7 @@ from typing import Any, Dict, Tuple, Optional
 
 import numpy as np
 import matplotlib.pyplot as plt
+import contextily as cx
 
 from ftv.io.save_playback_video import save_playback_video
 
@@ -94,6 +95,12 @@ def animate_playback(
     # Static elements
     line, = ax.plot([], [], linewidth=2)
     pt, = ax.plot([], [], marker="o")
+    try:
+        # 'crs' tells contextily your data is in Latitude/Longitude (WGS84)
+        # It will automatically fetch map tiles and match them to your track.
+        cx.add_basemap(ax, crs='EPSG:4326', source=cx.providers.OpenStreetMap.Mapnik)
+    except Exception as e:
+        print(f"Could not load map background: {e}")
 
     writer = None
     video_path = None

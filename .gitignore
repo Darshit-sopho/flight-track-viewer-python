@@ -8,3 +8,6 @@ venv/
 .vscode/
 build/
 src/flight_track_viewer.egg-info/
+build_exe.py
+dist/
+*.spec
