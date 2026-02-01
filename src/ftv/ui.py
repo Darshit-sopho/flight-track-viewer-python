@@ -14,8 +14,10 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer
 from PyQt6.QtGui import QFont, QPixmap, QImage
 import matplotlib
-matplotlib.use('Qt5Agg')
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+# matplotlib.use('Qt5Agg')
+matplotlib.use('QtAgg')
+# from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import numpy as np
@@ -56,8 +58,8 @@ class FlightProcessingThread(QThread):
                 csv_file=self.csv_file,
                 animate=self.config.get('animate', False),
                 animate_step_seconds=self.config.get('step_seconds', 30),
-                save_figures_enabled=self.config.get('save_figures_enabled', False),
-                save_video_enabled=self.config.get('save_video_enabled', False)
+                save_figures_enabled=self.config.get('save_figures', False),
+                save_video_enabled=self.config.get('save_video', False)
             )
             
             self.progress.emit(90, "Finalizing...")
@@ -358,8 +360,8 @@ class FlightTrackViewerUI(QMainWindow):
         # Prepare configuration
         config = {
             'animate': self.animate_cb.isChecked(),
-            'save_figures_enabled': self.save_figures_enabled_cb.isChecked(),
-            'save_video_enabled': self.save_video_enabled_cb.isChecked(),
+            'save_figures': self.save_figures_enabled_cb.isChecked(),
+            'save_video': self.save_video_enabled_cb.isChecked(),
             'step_seconds': 30
         }
         

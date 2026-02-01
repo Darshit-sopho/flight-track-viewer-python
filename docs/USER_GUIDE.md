@@ -6,17 +6,34 @@ Complete guide to using the Flight Track Viewer graphical interface.
 
 ## 🚀 Launching the Application
 
-After installation with `setup_with_ui`, you can launch the app:
+After installation with `scripts/setup_with_ui`, you have multiple ways to launch:
 
-**Windows:**
-```batch
-python flight_track_viewer.py
-```
-
-**Mac/Linux:**
+### Method 1: Command-Line Launcher (Easiest)
 ```bash
-python3 flight_track_viewer.py
+flight-track-viewer
 ```
+
+### Method 2: Python Module
+```bash
+python -m ftv.ui
+```
+
+### Method 3: Quick Launcher Scripts
+```bash
+# Windows
+scripts\run_ui.bat
+
+# Mac/Linux
+./scripts/run_ui.sh
+```
+
+### Method 4: Programmatically
+```python
+from ftv import launch_ui
+launch_ui()
+```
+
+All methods launch the same application - use whichever you prefer!
 
 ---
 
@@ -223,17 +240,19 @@ Currently not implemented, but coming soon:
 ## 🎯 Common Workflows
 
 ### Workflow 1: Quick Flight Review
-1. Browse → Select CSV
-2. Process (with Live Animation on)
-3. Watch animation
-4. Review statistics
+1. Launch: `flight-track-viewer`
+2. Browse → Select CSV
+3. Process (with Live Animation on)
+4. Watch animation
+5. Review statistics
 
 ### Workflow 2: Professional Report
-1. Browse → Select CSV
-2. Enable "Save Figures" and "Save Animation"
-3. Process
-4. Collect PNG files and MP4 video
-5. Include in presentation/report
+1. Launch: `python -m ftv.ui`
+2. Browse → Select CSV
+3. Enable "Save Figures" and "Save Animation"
+4. Process
+5. Collect PNG files and MP4 video
+6. Include in presentation/report
 
 ### Workflow 3: Batch Processing
 For multiple flights, use the Python API instead:
@@ -244,9 +263,32 @@ for csv_file in flight_files:
     run(csv_file=csv_file, save_figures=True)
 ```
 
+See [API Documentation](API.md) for details.
+
 ---
 
 ## 🐛 Troubleshooting
+
+### Cannot Launch Application
+
+**Problem:** `flight-track-viewer` command not found
+
+**Solutions:**
+1. Check UI dependencies installed: `pip list | grep PyQt6`
+2. Reinstall with UI: `pip install -e ".[ui]"`
+3. Use alternative: `python -m ftv.ui`
+4. Use launcher: `./scripts/run_ui.sh`
+
+### "UI dependencies not installed" Error
+
+**Problem:** Error message when trying to launch
+
+**Solution:** Install UI dependencies:
+```bash
+pip install -e ".[ui]"
+# or
+scripts/setup_with_ui.sh
+```
 
 ### Animation Not Showing
 **Problem:** Map is blank or not updating
@@ -290,7 +332,10 @@ for csv_file in flight_files:
 1. Verify PyQt6 is installed: `pip list | grep PyQt6`
 2. Reinstall UI dependencies: `pip install -e ".[ui]"`
 3. Check Python version (must be 3.10 or 3.11)
-4. Try running from command line to see errors
+4. Try running from command line to see errors:
+   ```bash
+   python -m ftv.ui
+   ```
 
 ---
 
@@ -381,12 +426,39 @@ Currently fixed, but future versions may allow:
 
 ---
 
+## 🚀 Integration with Python API
+
+You can launch the GUI programmatically:
+
+```python
+# Launch UI from your script
+from ftv import launch_ui
+
+launch_ui()
+```
+
+Or combine GUI and API usage:
+
+```python
+from ftv import run, launch_ui
+
+# Process in background
+result = run(csv_file="flight.csv", save_figures=True)
+
+# Then launch GUI for another flight
+if result['data']['max_altitude_ft'] < 5000:
+    print("Low altitude flight detected")
+    launch_ui()  # Review manually
+```
+
+---
+
 ## 📚 Next Steps
 
 - **Learn the API:** See [API Documentation](API.md)
 - **View Examples:** Check [examples folder](../examples/)
-- **Report Issues:** [GitHub Issues](https://github.com/yourusername/flight-track-viewer/issues)
-- **Contribute:** See project README
+- **Installation Help:** See [Installation Guide](INSTALLATION.md)
+- **Report Issues:** [GitHub Issues](https://github.com/Darshit-sopho/flight-track-viewer-python/issues)
 
 ---
 

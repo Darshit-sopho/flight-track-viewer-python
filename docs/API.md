@@ -24,15 +24,21 @@ result = run(
     save_figures=True,
     save_video=True
 )
+
+# Launch the GUI programmatically
+from ftv import launch_ui
+launch_ui()
 ```
 
 ---
 
-## Main Function: `run()`
+## Main Functions
+
+### `run()` - Process Flight Data
 
 The primary entry point for flight track analysis.
 
-### Signature
+#### Signature
 
 ```python
 def run(
@@ -45,40 +51,40 @@ def run(
 ) -> dict
 ```
 
-### Parameters
+#### Parameters
 
-#### `csv_file` (str | None)
+**`csv_file` (str | None)**
 - **Default:** `None` (opens file picker)
 - **Description:** Path to CSV file containing flight data
 - **Example:** `"path/to/flight.csv"`
 
-#### `callsign` (str | None)  
+**`callsign` (str | None)**  
 - **Default:** `None` (uses all data)
 - **Description:** Filter data by specific aircraft callsign
 - **Example:** `"N503SP"`
 
-#### `animate` (bool)
+**`animate` (bool)**
 - **Default:** `False`
 - **Description:** Create animated flight playback
 - **Note:** Requires matplotlib display backend
 
-#### `animate_step_seconds` (float)
+**`animate_step_seconds` (float)**
 - **Default:** `30`
 - **Description:** Time interval between animation frames (in seconds)
 - **Example:** `60` for 1-minute intervals
 
-#### `save_figures` (bool)
+**`save_figures` (bool)**
 - **Default:** `False`
 - **Description:** Save static plots as PNG files
 - **Output:** Creates PNG files in same directory as CSV
 
-#### `save_video` (bool)
+**`save_video` (bool)**
 - **Default:** `False`
 - **Description:** Save animation as MP4 video
 - **Output:** Creates MP4 file in same directory as CSV
 - **Requires:** `animate=True`
 
-### Return Value
+#### Return Value
 
 Returns a dictionary with the following structure:
 
@@ -89,6 +95,46 @@ Returns a dictionary with the following structure:
     'figures': {...},     # Matplotlib figure objects
     'outputs': {...}      # Paths to saved files
 }
+```
+
+---
+
+### `launch_ui()` - Launch GUI Application
+
+Launch the graphical user interface programmatically.
+
+#### Signature
+
+```python
+def launch_ui() -> None
+```
+
+#### Usage
+
+```python
+from ftv import launch_ui
+
+# Launch the GUI
+launch_ui()
+```
+
+#### Requirements
+
+- PyQt6 must be installed
+- Install with: `pip install -e ".[ui]"`
+
+#### Error Handling
+
+If UI dependencies are not installed, shows helpful error message:
+```
+UI dependencies not installed!
+
+To use the GUI, install with UI support:
+  pip install -e '.[ui]'
+
+Or run the setup script:
+  Windows: scripts\setup_with_ui.bat
+  Mac/Linux: ./scripts/setup_with_ui.sh
 ```
 
 ---
@@ -239,7 +285,58 @@ for r in results:
     print(f"{r['file']}: {r['max_alt']:.0f}ft, {r['max_speed']:.0f}kts")
 ```
 
-### Example 4: Custom Analysis
+### Example 4: Launch GUI After Analysis
+
+```python
+from ftv import run, launch_ui
+
+# First, analyze programmatically
+result = run(csv_file="flight.csv", save_figures=True)
+
+# Check if flight meets criteria
+if result['data']['max_altitude_ft'] > 10000:
+    print("High altitude flight detected!")
+    
+    # Launch GUI for detailed review
+    launch_ui()
+```
+
+### Example 5: Conditional GUI Launch
+
+```python
+from ftv import run, launch_ui
+import sys
+
+def analyze_and_review(csv_file):
+    """Analyze flight and optionally launch GUI"""
+    result = run(csv_file=csv_file)
+    
+    # Auto-detect unusual patterns
+    unusual = False
+    
+    if result['data']['max_altitude_ft'] > 15000:
+        print("⚠️ Unusually high altitude detected")
+        unusual = True
+    
+    if result['data']['max_speed_kts'] > 200:
+        print("⚠️ Unusually high speed detected")
+        unusual = True
+    
+    if unusual:
+        print("\nLaunching GUI for manual review...")
+        launch_ui()
+    
+    return result
+
+# Use it
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        analyze_and_review(sys.argv[1])
+    else:
+        print("Usage: python script.py <csv_file>")
+```
+
+### Example 6: Custom Analysis
 
 ```python
 from ftv import run
@@ -262,7 +359,7 @@ if result['data']['i_liftoff'] is not None:
     print(f"Liftoff at: {liftoff_time}")
 ```
 
-### Example 5: Filter by Callsign
+### Example 7: Filter by Callsign
 
 ```python
 from ftv import run
@@ -277,7 +374,7 @@ result = run(
 print(f"Processed {len(result['data']['df'])} points for N503SP")
 ```
 
-### Example 6: Access Figures
+### Example 8: Access Figures
 
 ```python
 from ftv import run
@@ -346,12 +443,25 @@ except Exception as e:
     print(f"Error: {e}")
 ```
 
+The `launch_ui()` function handles missing dependencies gracefully:
+
+```python
+from ftv import launch_ui
+
+try:
+    launch_ui()
+except SystemExit:
+    print("UI dependencies not installed")
+    print("Install with: pip install -e '.[ui]'")
+```
+
 ### Common Exceptions
 
 - `FileNotFoundError` - CSV file doesn't exist
 - `ValueError` - Invalid CSV format or data
 - `KeyError` - Required columns missing
-- `ImportError` - Missing dependencies
+- `ImportError` - Missing dependencies (core)
+- `SystemExit` - UI dependencies missing (from launch_ui)
 
 ---
 
@@ -415,7 +525,10 @@ plt.savefig('custom_viz.png')
 
 ```python
 ftv/
-├── run.py                    # Main entry point
+├── __init__.py               # Exports: run, launch_ui
+├── __main__.py               # Module entry point (python -m ftv.ui)
+├── run.py                    # Main API function
+├── ui.py                     # GUI application
 ├── config.py                 # Configuration
 ├── data/
 │   ├── read_flight_csv.py    # CSV parsing
@@ -442,18 +555,26 @@ For type checking:
 
 ```python
 from typing import Dict, Optional
-from ftv import run
+from ftv import run, launch_ui
 
 def analyze_flight(csv_path: str) -> Dict:
+    """Analyze a flight and return results"""
     result: Dict = run(csv_file=csv_path)
     return result
 
-# With optional parameters
 def batch_analyze(
     files: list[str],
     save: bool = True
 ) -> list[Dict]:
+    """Analyze multiple flights"""
     return [run(csv_file=f, save_figures=save) for f in files]
+
+def review_flight(csv_path: str) -> None:
+    """Analyze and launch GUI for review"""
+    result = analyze_flight(csv_path)
+    
+    if result['data']['max_altitude_ft'] > 10000:
+        launch_ui()
 ```
 
 ---
@@ -494,7 +615,7 @@ def process_flight(csv_file):
 ### Web API
 
 ```python
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from ftv import run
 
 app = Flask(__name__)
@@ -507,27 +628,40 @@ def analyze(filename):
         'max_speed': result['data']['max_speed_kts'],
         'distance': result['data']['max_radius_nm']
     })
+
+@app.route('/launch-ui')
+def launch():
+    from ftv import launch_ui
+    launch_ui()
+    return "GUI launched"
 ```
 
 ### Command Line Tool
 
 ```python
 import sys
-from ftv import run
+from ftv import run, launch_ui
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python analyze.py <csv_file>")
+        print("Usage: python analyze.py <csv_file> [--gui]")
         sys.exit(1)
     
+    csv_file = sys.argv[1]
+    
+    # Always analyze
     result = run(
-        csv_file=sys.argv[1],
+        csv_file=csv_file,
         save_figures=True,
         save_video=True
     )
     
     print(f"Analysis complete!")
     print(f"Max altitude: {result['data']['max_altitude_ft']:.0f} ft")
+    
+    # Launch GUI if requested
+    if "--gui" in sys.argv:
+        launch_ui()
 ```
 
 ---
@@ -536,7 +670,7 @@ if __name__ == "__main__":
 
 ```python
 import unittest
-from ftv import run
+from ftv import run, launch_ui
 
 class TestFlightAnalysis(unittest.TestCase):
     def test_basic_run(self):
@@ -547,6 +681,11 @@ class TestFlightAnalysis(unittest.TestCase):
     def test_max_altitude(self):
         result = run(csv_file="examples/sample_flight.csv")
         self.assertGreater(result['data']['max_altitude_ft'], 0)
+    
+    def test_launch_ui_import(self):
+        # Just test that import works
+        from ftv import launch_ui
+        self.assertTrue(callable(launch_ui))
 
 if __name__ == '__main__':
     unittest.main()
@@ -565,6 +704,25 @@ from ftv import run
 
 result = run(csv_file="flight.csv")
 # Figures display automatically
+```
+
+**Q: How do I launch the GUI from a script?**
+
+A: Use `launch_ui()`:
+```python
+from ftv import launch_ui
+launch_ui()
+```
+
+**Q: Can I use both API and GUI together?**
+
+A: Absolutely! Analyze with `run()`, then launch GUI with `launch_ui()`:
+```python
+from ftv import run, launch_ui
+
+result = run(csv_file="flight.csv")
+if result['data']['max_altitude_ft'] > 10000:
+    launch_ui()  # Manual review
 ```
 
 **Q: How do I access individual data points?**

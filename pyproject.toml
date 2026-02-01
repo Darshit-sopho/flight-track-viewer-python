@@ -46,3 +46,7 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[project.scripts]
+flight-track-viewer = "ftv:launch_ui"
+ftv-gui = "ftv:launch_ui"

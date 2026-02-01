@@ -37,7 +37,7 @@ echo ""
 # Launch the UI
 echo "[3/3] Launching Flight Track Viewer UI..."
 echo ""
-python3 flight_track_viewerUI.py
+python3 -m ftv.ui
 
 if [ $? -ne 0 ]; then
     echo ""

@@ -1,68 +1,3 @@
-# from pathlib import Path
-# import numpy as np
-# import matplotlib.pyplot as plt
-# import imageio.v2 as imageio
-
-
-# def animate_playback(d: dict, cfg, out_folder: Path, base_name: str, outs: dict):
-#     """
-#     Animate the track and optionally save MP4 by writing frames.
-#     """
-#     fig = plt.figure(figsize=(8, 6))
-#     if not cfg.show_plots:
-#         plt.close(fig)
-#     ax = fig.add_subplot(111)
-
-#     ax.set_xlim(d["lon_lim"])
-#     ax.set_ylim(d["lat_lim"])
-#     ax.set_xlabel("Longitude")
-#     ax.set_ylabel("Latitude")
-#     ax.set_title("Playback")
-#     ax.grid(True)
-
-#     # static ref
-#     ax.plot(cfg.ref_lon, cfg.ref_lat, marker="o", markersize=8, label="Ref")
-
-#     # artists
-#     (line,) = ax.plot([d["lon"][0]], [d["lat"][0]], linewidth=1.8, label="Track")
-#     (pt,) = ax.plot([d["lon"][0]], [d["lat"][0]], marker="o", markersize=6)
-
-#     ax.legend(loc="best")
-
-#     writer = None
-#     video_path = None
-#     if cfg.save_video:
-#         video_path = out_folder / f"{base_name}_Playback.mp4"
-#         writer = imageio.get_writer(video_path, fps=cfg.video_fps)
-
-#     try:
-#         for k in d["frame_idx"][1:]:
-#             line.set_data(d["lon"][: k + 1], d["lat"][: k + 1])
-#             pt.set_data([d["lon"][k]], [d["lat"][k]])
-
-#             title = f"{d.get('callsign','')}  {str(d['t'][k])}"
-#             ax.set_title(title)
-
-#             fig.canvas.draw()
-            
-#             if writer is not None:
-#                 # grab RGB frame from canvas
-#                 w, h = fig.canvas.get_width_height()
-#                 # img = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8).reshape(h, w, 3)
-#                 buf = np.frombuffer(fig.canvas.tostring_argb(), dtype=np.uint8)
-#                 buf = buf.reshape(h, w, 4)          # ARGB
-#                 buf = buf[:, :, [1, 2, 3]]          # -> RGB (drop alpha, reorder)
-#                 writer.append_data(buf)
-#     finally:
-#         if writer is not None:
-#             writer.close()
-
-#     if video_path is not None:
-#         outs["playback_mp4"] = str(video_path)
-
-#     return fig, outs
-
-
 # src/ftv/plotting/animate_playback.py
 
 from __future__ import annotations
@@ -165,11 +100,11 @@ def animate_playback(
 
     try:
         if getattr(cfg, "save_video", False):
+            print("Starting video writer...")
             video_path = str(out_dir / f"{base_name}_Playback.mp4")
             writer = save_playback_video(video_path, cfg)
 
         # Initial frame
-        # k0 = d["frame_idx"][0] if d.get("frame_idx") else 0
         frame_idx = d.get("frame_idx")
         if frame_idx is not None and len(frame_idx) > 0:
             k0 = frame_idx[0]

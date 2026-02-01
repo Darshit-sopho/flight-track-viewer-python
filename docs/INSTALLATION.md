@@ -28,6 +28,14 @@ chmod +x scripts/setup_with_ui.sh
 2. Installs core package + PyQt6
 3. Launches the GUI automatically
 
+**After installation, run anytime with:**
+```bash
+flight-track-viewer          # Command-line launcher
+python -m ftv.ui             # Module execution
+./scripts/run_ui.sh          # Quick launcher (Mac/Linux)
+scripts\run_ui.bat           # Quick launcher (Windows)
+```
+
 #### Python API Only (Developers/Scripters)
 
 **Windows:**
@@ -46,6 +54,13 @@ chmod +x scripts/setup_core.sh
 2. Installs core package only (no GUI)
 3. Displays usage instructions
 
+**Then use programmatically:**
+```python
+from ftv import run
+
+result = run(csv_file="flight.csv")
+```
+
 ---
 
 ## 🎯 Which Installation Should You Choose?
@@ -57,11 +72,13 @@ Do you want the graphical interface?
 │        • Point-and-click interface
 │        • Visual flight animation
 │        • No coding required
+│        • Run with: flight-track-viewer
 │
 └─ NO  → Use setup_core
          • Programmatic usage
          • Integrate into scripts
          • Smaller installation (~60MB less)
+         • Use the Python API
 ```
 
 ---
@@ -80,6 +97,12 @@ Installs:
 - imageio, imageio-ffmpeg
 - **No PyQt6**
 
+**Use with:**
+```python
+from ftv import run
+result = run(csv_file="flight.csv")
+```
+
 ### Install with GUI
 ```bash
 pip install -e ".[ui]"
@@ -88,6 +111,13 @@ pip install -e ".[ui]"
 Installs:
 - Everything from core
 - **PyQt6** (GUI framework)
+
+**Run with:**
+```bash
+flight-track-viewer
+# or
+python -m ftv.ui
+```
 
 ### Install Everything (Development)
 ```bash
@@ -132,13 +162,25 @@ python -c "from ftv import run; print('Core package working!')"
 python -c "import PyQt6; print('GUI dependencies working!')"
 ```
 
+### Test Entry Point (if GUI installed)
+```bash
+flight-track-viewer --help 2>/dev/null || echo "Entry point not yet configured"
+```
+
 ### Run the Application
 ```bash
-# Windows
-python flight_track_viewer.py
+# Method 1: Entry point
+flight-track-viewer
 
-# Mac/Linux
-python3 flight_track_viewer.py
+# Method 2: Module
+python -m ftv.ui
+
+# Method 3: Launcher script
+./scripts/run_ui.sh     # Mac/Linux
+scripts\run_ui.bat      # Windows
+
+# Method 4: Programmatically
+python -c "from ftv import launch_ui; launch_ui()"
 ```
 
 ---
@@ -148,6 +190,12 @@ python3 flight_track_viewer.py
 ### Add GUI to Core Installation
 ```bash
 pip install -e ".[ui]"
+```
+
+After this, you can run:
+```bash
+flight-track-viewer
+python -m ftv.ui
 ```
 
 ### Add Development Tools
@@ -201,6 +249,30 @@ scripts/setup_with_ui.bat  # Windows
 ./scripts/setup_with_ui.sh # Mac/Linux
 ```
 
+### "command not found: flight-track-viewer"
+
+**Possible causes:**
+1. You installed core only (no GUI) - Install with: `pip install -e ".[ui]"`
+2. Entry point not configured - Run with: `python -m ftv.ui` instead
+3. Scripts directory not in PATH - Use full path or launcher scripts
+
+**Solution:**
+```bash
+# Reinstall with UI
+pip install -e ".[ui]"
+
+# Or use alternative methods
+python -m ftv.ui
+./scripts/run_ui.sh
+```
+
+### "UI dependencies not installed" error
+
+**Solution:** This means you installed core only. Add UI support:
+```bash
+pip install -e ".[ui]"
+```
+
 ### Qt errors on Linux
 
 **Ubuntu/Debian:**
@@ -244,6 +316,9 @@ source .venv/bin/activate
 
 # Install
 pip install -e ".[ui]"
+
+# Run
+flight-track-viewer
 ```
 
 ### Development Installation
@@ -252,8 +327,8 @@ For contributors:
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/flight-track-viewer.git
-cd flight-track-viewer
+git clone https://github.com/Darshit-sopho/flight-track-viewer-python.git
+cd flight-track-viewer-python
 
 # Install in development mode with all tools
 pip install -e ".[all]"
@@ -266,6 +341,9 @@ black .
 
 # Check code quality
 flake8
+
+# Run GUI
+flight-track-viewer
 ```
 
 ---
@@ -286,12 +364,48 @@ imageio-ffmpeg>=0.5 # Video encoding
 PyQt6>=6.6.0       # GUI framework
 ```
 
+**Enables:**
+- `flight-track-viewer` command
+- `python -m ftv.ui`
+- `from ftv import launch_ui`
+
 ### Optional: Development
 ```
 pytest>=7.0        # Testing
 black>=23.0        # Code formatting
 flake8>=6.0        # Linting
 ```
+
+---
+
+## 📍 Entry Points Explained
+
+After installing with `pip install -e ".[ui]"`, the package creates these entry points:
+
+### flight-track-viewer
+Main command-line launcher:
+```bash
+flight-track-viewer
+```
+
+Equivalent to:
+```bash
+python -c "from ftv import launch_ui; launch_ui()"
+```
+
+### ftv-gui
+Alternative launcher (same as above):
+```bash
+ftv-gui
+```
+
+### Module execution
+You can also run as a module:
+```bash
+python -m ftv.ui
+```
+
+All three methods launch the same GUI application.
 
 ---
 
@@ -323,11 +437,35 @@ rm -rf .venv
 - [ ] Python 3.10 or 3.11 installed
 - [ ] pip working (`pip --version`)
 - [ ] Cloned/downloaded repository
-- [ ] Navigated to project directory
+- [ ] Navigated to project directory (`cd flight-track-viewer-python`)
 - [ ] Chose installation type (GUI vs Core)
 - [ ] Ran appropriate setup script
 - [ ] Verified installation with test commands
 - [ ] Successfully ran the application
+
+---
+
+## 💡 Quick Reference
+
+### For GUI Users:
+```bash
+# Install
+scripts/setup_with_ui.sh    # or .bat on Windows
+
+# Run (pick one)
+flight-track-viewer
+python -m ftv.ui
+./scripts/run_ui.sh
+```
+
+### For API Users:
+```bash
+# Install
+scripts/setup_core.sh       # or .bat on Windows
+
+# Use in code
+python -c "from ftv import run; run()"
+```
 
 ---
 
@@ -336,7 +474,7 @@ rm -rf .venv
 If you encounter issues:
 
 1. Check this troubleshooting guide
-2. Search [GitHub Issues](https://github.com/yourusername/flight-track-viewer/issues)
+2. Search [GitHub Issues](https://github.com/Darshit-sopho/flight-track-viewer-python/issues)
 3. Open a new issue with:
    - Your OS and Python version
    - Installation method used

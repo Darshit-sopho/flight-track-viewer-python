@@ -38,7 +38,7 @@ echo.
 REM Launch the UI
 echo [3/3] Launching Flight Track Viewer UI...
 echo.
-python flight_track_viewerUI.py
+python -m ftv.ui
 
 if %errorlevel% neq 0 (
     echo.

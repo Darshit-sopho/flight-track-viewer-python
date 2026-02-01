@@ -22,7 +22,7 @@
 
 ## 🚀 Quick Start
 
-### Option 1: GUI Application (Recommended)
+### GUI Application (Recommended)
 
 **Windows:**
 ```batch
@@ -37,7 +37,21 @@ chmod +x scripts/setup_with_ui.sh
 
 This installs everything and launches the GUI automatically!
 
-### Option 2: Python API Only
+After installation, you can run the app anytime with:
+
+```bash
+# Command-line launcher
+flight-track-viewer
+
+# Or use the module
+python -m ftv.ui
+
+# Or use the quick launcher
+scripts/run_ui.bat     # Windows
+./scripts/run_ui.sh    # Mac/Linux
+```
+
+### Python API Only
 
 For programmatic use without the GUI:
 
@@ -65,7 +79,6 @@ print(f"Max altitude: {result['data']['max_altitude_ft']} ft")
 ## 📖 What's Included
 
 ### GUI Application
-![Flight Track Viewer Interface](docs/screenshot_placeholder.png)
 
 **Left Panel:**
 - Animated flight path on map
@@ -91,6 +104,10 @@ result = run(
     save_figures=True,
     save_video=True
 )
+
+# Launch the GUI programmatically
+from ftv import launch_ui
+launch_ui()
 ```
 
 ---
@@ -134,26 +151,37 @@ See `examples/sample_flight.csv` for a complete example.
 ```
 flight-track-viewer/
 ├── README.md                    # You are here
-├── flight_track_viewer.py       # GUI application
-├── pyproject.toml              # Package configuration
-├── scripts/                    # Installation scripts
-│   ├── setup_with_ui.bat       # GUI setup (Windows)
-│   ├── setup_with_ui.sh        # GUI setup (Mac/Linux)
-│   ├── setup_core.bat          # Core setup (Windows)
-│   └── setup_core.sh           # Core setup (Mac/Linux)
-├── docs/                       # Documentation
-│   ├── INSTALLATION.md         # Installation guide
-│   ├── USER_GUIDE.md           # GUI user guide
-│   └── API.md                  # API documentation
-├── examples/                   # Examples & sample data
-│   ├── sample_flight.csv       # Test CSV file
-│   └── example_usage.py        # API examples
-└── src/ftv/                    # Core package
-    ├── run.py                  # Main entry point
-    ├── data/                   # Data processing
-    ├── analysis/               # Flight analysis
-    ├── plotting/               # Visualization
-    └── io/                     # File operations
+├── pyproject.toml               # Package configuration
+├── LICENSE
+│
+├── scripts/                     # Installation & launcher scripts
+│   ├── setup_with_ui.bat        # GUI setup (Windows)
+│   ├── setup_with_ui.sh         # GUI setup (Mac/Linux)
+│   ├── setup_core.bat           # Core setup (Windows)
+│   ├── setup_core.sh            # Core setup (Mac/Linux)
+│   ├── run_ui.bat               # Quick launcher (Windows)
+│   └── run_ui.sh                # Quick launcher (Mac/Linux)
+│
+├── docs/                        # Documentation
+│   ├── INSTALLATION.md          # Installation guide
+│   ├── USER_GUIDE.md            # GUI user guide
+│   └── API.md                   # API documentation
+│
+├── examples/                    # Examples & sample data
+│   ├── sample_flight.csv        # Test CSV file
+│   └── example_usage.py         # API examples
+│
+└── src/                         # Source code
+    └── ftv/
+        ├── __init__.py          # Package init
+        ├── __main__.py          # Module entry point
+        ├── run.py               # API entry point
+        ├── ui.py                # GUI application
+        ├── config.py
+        ├── data/                # Data processing
+        ├── analysis/            # Flight analysis
+        ├── plotting/            # Visualization
+        └── io/                  # File operations
 ```
 
 ---
@@ -167,10 +195,33 @@ flight-track-viewer/
 
 ---
 
+## 🎓 Multiple Ways to Run
+
+After installation with `scripts/setup_with_ui`:
+
+```bash
+# 1. Command-line launcher (easiest)
+flight-track-viewer
+
+# 2. Python module
+python -m ftv.ui
+
+# 3. Quick launcher script
+scripts/run_ui.bat     # Windows
+./scripts/run_ui.sh    # Mac/Linux
+
+# 4. Programmatically
+python -c "from ftv import launch_ui; launch_ui()"
+```
+
+All do the same thing - choose what works best for you!
+
+---
+
 ## 🤝 Contributing
 
 Contributions welcome! Please feel free to:
-- Report bugs via [GitHub Issues](https://github.com/yourusername/flight-track-viewer/issues)
+- Report bugs via [GitHub Issues](https://github.com/Darshit-sopho/flight-track-viewer-python/issues)
 - Suggest features
 - Submit pull requests
 
