@@ -11,3 +11,5 @@ src/flight_track_viewer.egg-info/
 build_exe.py
 dist/
 *.spec
+*.png
+*.mp4

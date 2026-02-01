@@ -15,7 +15,7 @@ def plot_time_series(d: dict, cfg):
     ax1 = fig.add_subplot(211)
     if alt is not None and len(alt) > 0:
         ax1.plot(d["t"], alt, linewidth=1.2)
-        ax1.set_ylabel("Altitude")
+        ax1.set_ylabel("Altitude (feet)")
         ax1.set_title("Altitude vs time")
         ax1.grid(True)
     else:
@@ -25,7 +25,7 @@ def plot_time_series(d: dict, cfg):
     ax2 = fig.add_subplot(212)
     if spd is not None and len(spd) > 0:
         ax2.plot(d["t"], spd, linewidth=1.2)
-        ax2.set_ylabel("Speed")
+        ax2.set_ylabel("Speed (knots)")
         ax2.set_xlabel("Time")
         ax2.set_title("Speed vs time")
         ax2.grid(True)
