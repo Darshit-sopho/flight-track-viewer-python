@@ -1,6 +1,6 @@
 [project]
 name = "flight-track-viewer"
-version = "0.1.0"
+version = "1.0.1"
 description = "Visualize and analyze flight tracks from CSV data."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -51,3 +51,7 @@ where = ["src"]
 [project.scripts]
 flight-track-viewer = "ftv:launch_ui"
 ftv-gui = "ftv:launch_ui"
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]

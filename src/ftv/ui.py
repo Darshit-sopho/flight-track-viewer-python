@@ -9,7 +9,8 @@ from pathlib import Path
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QPushButton, QCheckBox, QFileDialog, QLabel, QGroupBox,
-    QProgressBar, QTextEdit, QSplitter, QFrame, QGridLayout
+    QProgressBar, QTextEdit, QSplitter, QFrame, QGridLayout,
+    QSlider, QComboBox
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer
 from PyQt6.QtGui import QFont, QPixmap, QImage
@@ -188,7 +189,7 @@ class StaticPlotCanvas(FigureCanvas):
 
 class FlightTrackViewerUI(QMainWindow):
     """Main application window"""
-    
+
     def __init__(self):
         super().__init__()
         self.csv_file = None
@@ -196,6 +197,8 @@ class FlightTrackViewerUI(QMainWindow):
         self.animation_timer = QTimer()
         self.animation_timer.timeout.connect(self.update_animation)
         self.is_animating = False
+        self.base_interval = 100  # Standard speed (ms)
+        self.frame_step = 1
         
         self.init_ui()
         
@@ -227,8 +230,22 @@ class FlightTrackViewerUI(QMainWindow):
         self.animation_canvas = AnimationCanvas(self)
         left_layout.addWidget(self.animation_canvas)
         
-        # Animation controls
+        # --- ANIMATION CONTROLS ---
+        
+        # 1. Slider Row
+        slider_layout = QHBoxLayout()
+        self.timeline_slider = QSlider(Qt.Orientation.Horizontal)
+        self.timeline_slider.setRange(0, 100)
+        self.timeline_slider.setEnabled(False)
+        # Connect slider move to update frame
+        self.timeline_slider.valueChanged.connect(self.slider_moved)
+        slider_layout.addWidget(self.timeline_slider)
+        
+        left_layout.addLayout(slider_layout)
+
+        # 2. Buttons and Speed Row
         anim_controls = QHBoxLayout()
+        
         self.play_pause_btn = QPushButton("▶ Play")
         self.play_pause_btn.clicked.connect(self.toggle_animation)
         self.play_pause_btn.setEnabled(False)
@@ -237,8 +254,17 @@ class FlightTrackViewerUI(QMainWindow):
         self.reset_btn.clicked.connect(self.reset_animation)
         self.reset_btn.setEnabled(False)
         
+        # Speed Control
+        speed_label = QLabel("Speed:")
+        self.speed_combo = QComboBox()
+        self.speed_combo.addItems(["1x", "2x", "5x", "10x", "20x"])
+        self.speed_combo.currentTextChanged.connect(self.change_speed)
+        self.speed_combo.setEnabled(False)
+        
         anim_controls.addWidget(self.play_pause_btn)
         anim_controls.addWidget(self.reset_btn)
+        anim_controls.addWidget(speed_label)
+        anim_controls.addWidget(self.speed_combo)
         anim_controls.addStretch()
         
         left_layout.addLayout(anim_controls)
@@ -443,7 +469,14 @@ class FlightTrackViewerUI(QMainWindow):
             }
             self.animation_canvas.load_flight_data(flight_data)
             
-            # Enable animation controls
+            # --- UPDATE CONTROLS STATE ---
+            # Set slider range based on data length
+            total_frames = len(lats)
+            self.timeline_slider.setRange(0, total_frames - 1)
+            self.timeline_slider.setValue(0)
+            self.timeline_slider.setEnabled(True)
+            self.speed_combo.setEnabled(True)
+            
             self.play_pause_btn.setEnabled(True)
             self.reset_btn.setEnabled(True)
             
@@ -508,7 +541,35 @@ class FlightTrackViewerUI(QMainWindow):
             
         except Exception as e:
             self.info_text.setText(f"Error displaying results:\n{str(e)}")
+            import traceback
+            traceback.print_exc()
+
+    def slider_moved(self, value):
+        """Handle slider movement (scrubbing)"""
+        # Update the canvas to the specific frame
+        self.animation_canvas.update_frame(value)
     
+    def change_speed(self, text):
+        """Update animation speed based on selection"""
+        if not text:
+            return
+            
+        # Extract multiplier (e.g., "2x" -> 2)
+        try:
+            multiplier = int(text.replace('x', ''))
+        except ValueError:
+            multiplier = 1
+
+        # Instead of shrinking interval too much, increase frame step
+        self.frame_step = multiplier
+        self.current_interval = self.base_interval  # keep timer stable, like 100ms
+
+        # If currently running, restart timer with new interval
+        if self.is_animating:
+            self.animation_timer.stop()
+            self.animation_timer.start(self.current_interval)
+
+
     def toggle_animation(self):
         """Start/stop the animation"""
         if self.is_animating:
@@ -516,31 +577,43 @@ class FlightTrackViewerUI(QMainWindow):
             self.play_pause_btn.setText("▶ Play")
             self.is_animating = False
         else:
-            self.animation_timer.start(100)  # Update every 100ms
+            # Determine interval based on current speed selection
+            current_speed_text = self.speed_combo.currentText()
+            try:
+                multiplier = int(current_speed_text.replace('x', ''))
+            except ValueError:
+                multiplier = 1
+            
+            interval = max(1, int(self.base_interval / multiplier))
+            
+            self.animation_timer.start(interval)
             self.play_pause_btn.setText("⏸ Pause")
             self.is_animating = True
     
     def update_animation(self):
-        """Update animation frame"""
         if self.animation_canvas.flight_data is None:
             return
-        
+
         max_frames = len(self.animation_canvas.flight_data['lat'])
         current = self.animation_canvas.current_frame
-        
-        if current >= max_frames - 1:
-            # Animation complete, loop back
+
+        current = current + getattr(self, "frame_step", 1)
+        if current >= max_frames:
             current = 0
-        else:
-            current += 1
-        
+
+        self.timeline_slider.blockSignals(True)
+        self.timeline_slider.setValue(current)
+        self.timeline_slider.blockSignals(False)
+
         self.animation_canvas.update_frame(current)
+
     
     def reset_animation(self):
         """Reset animation to start"""
         if self.is_animating:
             self.toggle_animation()
         
+        self.timeline_slider.setValue(0)
         self.animation_canvas.update_frame(0)
 
 

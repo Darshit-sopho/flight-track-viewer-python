@@ -13,7 +13,7 @@ def plot_map(d: dict, cfg):
 
     ax = fig.add_subplot(111)
     ax.plot(d["lon"], d["lat"], linewidth=2.5, color="black", label="Track")
-    ax.plot(cfg.ref_lon, cfg.ref_lat, marker="o", markersize=8, label="Ref")
+    # ax.plot(cfg.ref_lon, cfg.ref_lat, marker="o", markersize=8, label="Ref")
 
     if d.get("i_liftoff") is not None and d.get("i_touchdown") is not None and len(d.get("alt", [])) > 0:
         i0 = d["i_liftoff"]
