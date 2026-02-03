@@ -34,7 +34,7 @@ def plot_map(d: dict, cfg):
     try:
         # 'crs' tells contextily your data is in Latitude/Longitude (WGS84)
         # It will automatically fetch map tiles and match them to your track.
-        cx.add_basemap(ax, crs='EPSG:4326', source=cx.providers.OpenStreetMap.Mapnik)
+        cx.add_basemap(ax, crs='EPSG:4326', source=cx.providers.OpenStreetMap.Mapnik, zoom=10)
     except Exception as e:
         print(f"Could not load map background: {e}")
 

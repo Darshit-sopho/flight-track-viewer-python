@@ -13,7 +13,7 @@ from PyQt6.QtWidgets import (
     QSlider, QComboBox
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer
-from PyQt6.QtGui import QFont, QPixmap, QImage
+from PyQt6.QtGui import QFont, QPixmap, QImage, QIcon
 import matplotlib
 # matplotlib.use('Qt5Agg')
 matplotlib.use('QtAgg')
@@ -25,6 +25,7 @@ import numpy as np
 import pandas as pd
 from io import BytesIO
 import contextily as cx
+from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 
 # Import your flight track viewer functions
 try:
@@ -88,7 +89,7 @@ class AnimationCanvas(FigureCanvas):
         try:
             # 'crs' tells contextily your data is in Latitude/Longitude (WGS84)
             # It will automatically fetch map tiles and match them to your track.
-            cx.add_basemap(self.ax, crs='EPSG:4326', source=cx.providers.OpenStreetMap.Mapnik)
+            cx.add_basemap(self.ax, crs='EPSG:4326', source=cx.providers.OpenStreetMap.Mapnik, zoom=10)
         except Exception as e:
             print(f"Could not load map background: {e}")
         
@@ -205,6 +206,8 @@ class FlightTrackViewerUI(QMainWindow):
     def init_ui(self):
         """Initialize the user interface"""
         self.setWindowTitle("Flight Track Viewer")
+        icon = QIcon("icon.ico")
+        self.setWindowIcon(icon)
         self.setGeometry(100, 100, 1400, 900)
         
         # Create central widget and main layout
@@ -228,6 +231,9 @@ class FlightTrackViewerUI(QMainWindow):
         left_layout.addWidget(animation_label)
         
         self.animation_canvas = AnimationCanvas(self)
+        self.toolbar = NavigationToolbar(self.animation_canvas, self)
+        left_layout.addWidget(self.toolbar)
+        
         left_layout.addWidget(self.animation_canvas)
         
         # --- ANIMATION CONTROLS ---
