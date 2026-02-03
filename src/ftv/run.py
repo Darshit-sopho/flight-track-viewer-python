@@ -97,6 +97,10 @@ def run(
     T = apply_callsign_filter(T, cfg.callsign)
     d = parse_and_extract(T)
 
+    if d["lat"][0] and d["lon"][0]:
+        cfg.ref_lat = d["lat"][0]
+        cfg.ref_lon = d["lon"][0]
+
     # derived
     d["frame_idx"] = build_frame_idx(d["t"], cfg.animate_step_seconds)
     d["i_liftoff"], d["i_touchdown"] = detect_takeoff_landing(d.get("alt"))
