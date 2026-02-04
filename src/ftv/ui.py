@@ -1,11 +1,15 @@
 """
 Flight Track Viewer - GUI Application
-A modern UI for visualizing flight tracks from FlightRadar24 CSV data
+A modern UI for visualizing flight tracks using Leaflet.js and PyQt6
 """
 
 import sys
 import os
+import json
+import pandas as pd
+import numpy as np
 from pathlib import Path
+
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QPushButton, QCheckBox, QFileDialog, QLabel, QGroupBox,
@@ -13,19 +17,14 @@ from PyQt6.QtWidgets import (
     QSlider, QComboBox
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer
-from PyQt6.QtGui import QFont, QPixmap, QImage, QIcon
+from PyQt6.QtGui import QFont, QIcon
+from PyQt6.QtWebEngineWidgets import QWebEngineView
+
+# Matplotlib is still needed for the Static Plots (Altitude/Speed)
 import matplotlib
-# matplotlib.use('Qt5Agg')
 matplotlib.use('QtAgg')
-# from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-from io import BytesIO
-import contextily as cx
-from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 
 # Import your flight track viewer functions
 try:
@@ -72,184 +71,93 @@ class FlightProcessingThread(QThread):
             self.error.emit(str(e))
 
 
-class AnimationCanvas(FigureCanvas):
-    """Custom canvas for displaying animated flight track"""
-    
+class LeafletMapCanvas(QWebEngineView):
+    """
+    A modern map canvas using Leaflet.js inside QWebEngineView.
+    Offers 60FPS smooth zooming, panning, and vector graphics.
+    """
     def __init__(self, parent=None):
-        self.fig = Figure(figsize=(8, 6), dpi=100)
-        self.ax = self.fig.add_subplot(111)
-        super().__init__(self.fig)
-        self.setParent(parent)
-
-        # Initialize empty plot
-        self.ax.set_title("Flight Track Animation")
-        self.ax.set_xlabel("Longitude")
-        self.ax.set_ylabel("Latitude")
-        self.ax.grid(True, alpha=0.3)
-
-        # --- Panning/Zooming State ---
-        self._panning = False
-        self._pan_start_x = None
-        self._pan_start_y = None
-
-        # Connect Event Handlers
-        self.mpl_connect('scroll_event', self.on_scroll)        # Zoom
-        self.mpl_connect('button_press_event', self.on_press)   # Start Pan
-        self.mpl_connect('button_release_event', self.on_release) # Stop Pan
-        self.mpl_connect('motion_notify_event', self.on_motion)   # Move Pan
-        
-        try:
-            # 'crs' tells contextily your data is in Latitude/Longitude (WGS84)
-            # It will automatically fetch map tiles and match them to your track.
-            cx.add_basemap(self.ax, crs='EPSG:4326', source=cx.providers.OpenStreetMap.Mapnik, zoom=10)
-        except Exception as e:
-            print(f"Could not load map background: {e}")
-        
-        self.flight_line = None
-        self.current_pos_marker = None
+        super().__init__(parent)
         self.flight_data = None
         self.current_frame = 0
+        
+        # HTML Template for Leaflet Map
+        self.html_template = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+            <style>
+                body, html, #map { margin: 0; padding: 0; height: 100%; width: 100%; }
+            </style>
+        </head>
+        <body>
+            <div id="map"></div>
+            <script>
+                // Initialize Map
+                var map = L.map('map').setView([0, 0], 2);
+                
+                // Add OpenStreetMap Tiles
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap'
+                }).addTo(map);
 
-    # def on_scroll(self, event):
-    #     """Handle mouse scroll to zoom in/out"""
-    #     if event.inaxes != self.ax:
-    #         return
+                // Flight Path Polyline
+                var flightPath = L.polyline([], {color: 'blue', weight: 3}).addTo(map);
+                
+                // Plane Marker (Red Circle)
+                var planeMarker = L.circleMarker([0, 0], {
+                    color: 'red',
+                    fillColor: '#f03',
+                    fillOpacity: 0.9,
+                    radius: 3
+                }).addTo(map);
 
-    #     # Zoom scale factor
-    #     base_scale = 1.1
-        
-    #     # Get the current range
-    #     cur_xlim = self.ax.get_xlim()
-    #     cur_ylim = self.ax.get_ylim()
-        
-    #     xdata = event.xdata # get event x location
-    #     ydata = event.ydata # get event y location
-        
-    #     if event.button == 'up':
-    #         # Deal with zoom in
-    #         scale_factor = 1 / base_scale
-    #     elif event.button == 'down':
-    #         # Deal with zoom out
-    #         scale_factor = base_scale
-    #     else:
-    #         scale_factor = 1
-            
-    #     # Calculate new limits
-    #     new_width = (cur_xlim[1] - cur_xlim[0]) * scale_factor
-    #     new_height = (cur_ylim[1] - cur_ylim[0]) * scale_factor
-        
-    #     relx = (cur_xlim[1] - xdata) / (cur_xlim[1] - cur_xlim[0])
-    #     rely = (cur_ylim[1] - ydata) / (cur_ylim[1] - cur_ylim[0])
-        
-    #     self.ax.set_xlim([xdata - new_width * (1 - relx), xdata + new_width * relx])
-    #     self.ax.set_ylim([ydata - new_height * (1 - rely), ydata + new_height * rely])
-        
-    #     self.draw_idle()
+                // --- Functions called by Python ---
 
-    def on_scroll(self, event):
-        """Handle mouse scroll to zoom in/out"""
-        if event.inaxes != self.ax:
-            return
+                function loadPath(latlngs) {
+                    // latlngs is an array of [lat, lon]
+                    flightPath.setLatLngs(latlngs);
+                    if (latlngs.length > 0) {
+                        map.fitBounds(flightPath.getBounds());
+                    }
+                }
 
-        base_scale = 1.2  # Zoom strength
+                function updatePosition(lat, lon) {
+                    // Move the red marker
+                    var newLatLng = [lat, lon];
+                    planeMarker.setLatLng(newLatLng);
+                }
+            </script>
+        </body>
+        </html>
+        """
+        self.setHtml(self.html_template)
         
-        cur_xlim = self.ax.get_xlim()
-        cur_ylim = self.ax.get_ylim()
-        
-        xdata = event.xdata
-        ydata = event.ydata
-        
-        if event.button == 'up':
-            scale_factor = 1 / base_scale
-        elif event.button == 'down':
-            scale_factor = base_scale
-        else:
-            scale_factor = 1
-            
-        new_width = (cur_xlim[1] - cur_xlim[0]) * scale_factor
-        new_height = (cur_ylim[1] - cur_ylim[0]) * scale_factor
-        
-        relx = (cur_xlim[1] - xdata) / (cur_xlim[1] - cur_xlim[0])
-        rely = (cur_ylim[1] - ydata) / (cur_ylim[1] - cur_ylim[0])
-        
-        self.ax.set_xlim([xdata - new_width * (1 - relx), xdata + new_width * relx])
-        self.ax.set_ylim([ydata - new_height * (1 - rely), ydata + new_height * rely])
-        
-        self.draw_idle()
-
-    def on_press(self, event):
-        """Start panning on Left Click"""
-        if event.button == 1 and event.inaxes == self.ax:  # 1 = Left Mouse Button
-            self._panning = True
-            self._pan_start_x = event.xdata
-            self._pan_start_y = event.ydata
-            # Optional: Change cursor to 'closedhand' here if you want extra polish
-
-    def on_release(self, event):
-        """Stop panning"""
-        if event.button == 1:
-            self._panning = False
-            self._pan_start_x = None
-            self._pan_start_y = None
-
-    def on_motion(self, event):
-        """Execute panning if dragging"""
-        if self._panning and event.inaxes == self.ax:
-            # Calculate how far the mouse moved in data coordinates
-            dx = event.xdata - self._pan_start_x
-            dy = event.ydata - self._pan_start_y
-            
-            # Shift the axis limits by that delta to keep the point under the mouse fixed
-            xlim = self.ax.get_xlim()
-            ylim = self.ax.get_ylim()
-            
-            self.ax.set_xlim(xlim[0] - dx, xlim[1] - dx)
-            self.ax.set_ylim(ylim[0] - dy, ylim[1] - dy)
-            
-            self.draw_idle()
-
     def load_flight_data(self, data):
-        """Load flight data for animation"""
+        """Send the full flight path to the JavaScript map"""
         self.flight_data = data
         self.current_frame = 0
         
         if 'lat' in data and 'lon' in data:
+            # Convert numpy arrays to a standard Python list of [lat, lon]
             lats = data['lat']
             lons = data['lon']
             
-            # Clear previous plot
-            self.ax.clear()
+            # Create list of [lat, lon] points
+            # We take every Nth point to avoid passing 100k points to JS (which might lag)
+            step = max(1, len(lats) // 5000) 
+            path_points = [[float(lats[i]), float(lons[i])] for i in range(0, len(lats), step)]
             
-            # Plot full track in light gray
-            self.ax.plot(lons, lats, 'lightgray', linewidth=1, alpha=0.5, label='Full Track')
-            
-            # Initialize animated elements
-            self.flight_line, = self.ax.plot([], [], 'b-', linewidth=2, label='Current Path')
-            self.current_pos_marker, = self.ax.plot([], [], 'ro', markersize=10, label='Current Position')
-            
-            # Set plot limits with some padding
-            lat_range = max(lats) - min(lats)
-            lon_range = max(lons) - min(lons)
-            self.ax.set_xlim(min(lons) - lon_range*0.1, max(lons) + lon_range*0.1)
-            self.ax.set_ylim(min(lats) - lat_range*0.1, max(lats) + lat_range*0.1)
-            
-            self.ax.set_title("Flight Track Animation")
-            self.ax.set_xlabel("Longitude")
-            self.ax.set_ylabel("Latitude")
-            self.ax.grid(True, alpha=0.3)
-            self.ax.legend(loc='upper right')
-            try:
-                # 'crs' tells contextily your data is in Latitude/Longitude (WGS84)
-                # It will automatically fetch map tiles and match them to your track.
-                cx.add_basemap(self.ax, crs='EPSG:4326', source=cx.providers.OpenStreetMap.Mapnik)
-            except Exception as e:
-                print(f"Could not load map background: {e}")
-            
-            self.draw()
-    
+            # Send to JavaScript
+            js_code = f"loadPath({json.dumps(path_points)});"
+            self.page().runJavaScript(js_code)
+
     def update_frame(self, frame_idx):
-        """Update animation to specific frame"""
-        if self.flight_data is None or 'lat' not in self.flight_data:
+        """Update the marker position on the map"""
+        if self.flight_data is None:
             return
             
         lats = self.flight_data['lat']
@@ -258,18 +166,11 @@ class AnimationCanvas(FigureCanvas):
         if frame_idx >= len(lats):
             frame_idx = len(lats) - 1
             
-        # Update flight path up to current frame
-        self.flight_line.set_data(lons[:frame_idx+1], lats[:frame_idx+1])
+        lat = float(lats[frame_idx])
+        lon = float(lons[frame_idx])
         
-        # Update current position marker
-        self.current_pos_marker.set_data([lons[frame_idx]], [lats[frame_idx]])
-        
-        # Update title with current info
-        if 'timestamps' in self.flight_data and frame_idx < len(self.flight_data['timestamps']):
-            timestamp = self.flight_data['timestamps'][frame_idx]
-            self.ax.set_title(f"Flight Track Animation - {timestamp}")
-        
-        self.draw()
+        # Call the JavaScript function 'updatePosition'
+        self.page().runJavaScript(f"updatePosition({lat}, {lon});")
         self.current_frame = frame_idx
 
 
@@ -332,7 +233,7 @@ class FlightTrackViewerUI(QMainWindow):
         # Create splitter for visualization area
         splitter = QSplitter(Qt.Orientation.Horizontal)
         
-        # Left side - Animation canvas
+        # Left side - Animation canvas (Leaflet Map)
         left_widget = QWidget()
         left_layout = QVBoxLayout(left_widget)
         
@@ -340,11 +241,11 @@ class FlightTrackViewerUI(QMainWindow):
         animation_label.setFont(QFont("Arial", 12, QFont.Weight.Bold))
         left_layout.addWidget(animation_label)
         
-        self.animation_canvas = AnimationCanvas(self)
-        self.toolbar = NavigationToolbar(self.animation_canvas, self)
-        left_layout.addWidget(self.toolbar)
-
-        left_layout.addWidget(self.animation_canvas)
+        # --- CHANGED: Use LeafletMapCanvas instead of AnimationCanvas ---
+        self.animation_canvas = LeafletMapCanvas(self)
+        # left_layout.addWidget(self.animation_canvas)
+        left_layout.addWidget(self.animation_canvas, 1)  # Add stretch factor of 1 to make it expand
+        # ----------------------------------------------------------------
         
         # --- ANIMATION CONTROLS ---
         
@@ -353,7 +254,6 @@ class FlightTrackViewerUI(QMainWindow):
         self.timeline_slider = QSlider(Qt.Orientation.Horizontal)
         self.timeline_slider.setRange(0, 100)
         self.timeline_slider.setEnabled(False)
-        # Connect slider move to update frame
         self.timeline_slider.valueChanged.connect(self.slider_moved)
         slider_layout.addWidget(self.timeline_slider)
         
