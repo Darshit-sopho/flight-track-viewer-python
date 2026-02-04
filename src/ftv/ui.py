@@ -80,12 +80,24 @@ class AnimationCanvas(FigureCanvas):
         self.ax = self.fig.add_subplot(111)
         super().__init__(self.fig)
         self.setParent(parent)
-        
+
         # Initialize empty plot
         self.ax.set_title("Flight Track Animation")
         self.ax.set_xlabel("Longitude")
         self.ax.set_ylabel("Latitude")
         self.ax.grid(True, alpha=0.3)
+
+        # --- Panning/Zooming State ---
+        self._panning = False
+        self._pan_start_x = None
+        self._pan_start_y = None
+
+        # Connect Event Handlers
+        self.mpl_connect('scroll_event', self.on_scroll)        # Zoom
+        self.mpl_connect('button_press_event', self.on_press)   # Start Pan
+        self.mpl_connect('button_release_event', self.on_release) # Stop Pan
+        self.mpl_connect('motion_notify_event', self.on_motion)   # Move Pan
+        
         try:
             # 'crs' tells contextily your data is in Latitude/Longitude (WGS84)
             # It will automatically fetch map tiles and match them to your track.
@@ -97,7 +109,105 @@ class AnimationCanvas(FigureCanvas):
         self.current_pos_marker = None
         self.flight_data = None
         self.current_frame = 0
+
+    # def on_scroll(self, event):
+    #     """Handle mouse scroll to zoom in/out"""
+    #     if event.inaxes != self.ax:
+    #         return
+
+    #     # Zoom scale factor
+    #     base_scale = 1.1
         
+    #     # Get the current range
+    #     cur_xlim = self.ax.get_xlim()
+    #     cur_ylim = self.ax.get_ylim()
+        
+    #     xdata = event.xdata # get event x location
+    #     ydata = event.ydata # get event y location
+        
+    #     if event.button == 'up':
+    #         # Deal with zoom in
+    #         scale_factor = 1 / base_scale
+    #     elif event.button == 'down':
+    #         # Deal with zoom out
+    #         scale_factor = base_scale
+    #     else:
+    #         scale_factor = 1
+            
+    #     # Calculate new limits
+    #     new_width = (cur_xlim[1] - cur_xlim[0]) * scale_factor
+    #     new_height = (cur_ylim[1] - cur_ylim[0]) * scale_factor
+        
+    #     relx = (cur_xlim[1] - xdata) / (cur_xlim[1] - cur_xlim[0])
+    #     rely = (cur_ylim[1] - ydata) / (cur_ylim[1] - cur_ylim[0])
+        
+    #     self.ax.set_xlim([xdata - new_width * (1 - relx), xdata + new_width * relx])
+    #     self.ax.set_ylim([ydata - new_height * (1 - rely), ydata + new_height * rely])
+        
+    #     self.draw_idle()
+
+    def on_scroll(self, event):
+        """Handle mouse scroll to zoom in/out"""
+        if event.inaxes != self.ax:
+            return
+
+        base_scale = 1.2  # Zoom strength
+        
+        cur_xlim = self.ax.get_xlim()
+        cur_ylim = self.ax.get_ylim()
+        
+        xdata = event.xdata
+        ydata = event.ydata
+        
+        if event.button == 'up':
+            scale_factor = 1 / base_scale
+        elif event.button == 'down':
+            scale_factor = base_scale
+        else:
+            scale_factor = 1
+            
+        new_width = (cur_xlim[1] - cur_xlim[0]) * scale_factor
+        new_height = (cur_ylim[1] - cur_ylim[0]) * scale_factor
+        
+        relx = (cur_xlim[1] - xdata) / (cur_xlim[1] - cur_xlim[0])
+        rely = (cur_ylim[1] - ydata) / (cur_ylim[1] - cur_ylim[0])
+        
+        self.ax.set_xlim([xdata - new_width * (1 - relx), xdata + new_width * relx])
+        self.ax.set_ylim([ydata - new_height * (1 - rely), ydata + new_height * rely])
+        
+        self.draw_idle()
+
+    def on_press(self, event):
+        """Start panning on Left Click"""
+        if event.button == 1 and event.inaxes == self.ax:  # 1 = Left Mouse Button
+            self._panning = True
+            self._pan_start_x = event.xdata
+            self._pan_start_y = event.ydata
+            # Optional: Change cursor to 'closedhand' here if you want extra polish
+
+    def on_release(self, event):
+        """Stop panning"""
+        if event.button == 1:
+            self._panning = False
+            self._pan_start_x = None
+            self._pan_start_y = None
+
+    def on_motion(self, event):
+        """Execute panning if dragging"""
+        if self._panning and event.inaxes == self.ax:
+            # Calculate how far the mouse moved in data coordinates
+            dx = event.xdata - self._pan_start_x
+            dy = event.ydata - self._pan_start_y
+            
+            # Shift the axis limits by that delta to keep the point under the mouse fixed
+            xlim = self.ax.get_xlim()
+            ylim = self.ax.get_ylim()
+            
+            self.ax.set_xlim(xlim[0] - dx, xlim[1] - dx)
+            self.ax.set_ylim(ylim[0] - dy, ylim[1] - dy)
+            
+            self.draw_idle()
+
     def load_flight_data(self, data):
         """Load flight data for animation"""
         self.flight_data = data
@@ -233,7 +343,7 @@ class FlightTrackViewerUI(QMainWindow):
         self.animation_canvas = AnimationCanvas(self)
         self.toolbar = NavigationToolbar(self.animation_canvas, self)
         left_layout.addWidget(self.toolbar)
-        
+
         left_layout.addWidget(self.animation_canvas)
         
         # --- ANIMATION CONTROLS ---
