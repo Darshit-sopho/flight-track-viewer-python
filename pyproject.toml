@@ -1,6 +1,6 @@
 [project]
 name = "flight-track-viewer"
-version = "1.0.1"
+version = "2.0.0"
 description = "Visualize and analyze flight tracks from CSV data."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -21,6 +21,7 @@ dependencies = [
 # GUI interface
 ui = [
     "PyQt6>=6.6.0",
+    "PyQt6-WebEngine>=6.6.0",
 ]
 
 # Development tools
@@ -33,6 +34,7 @@ dev = [
 # Install everything
 all = [
     "PyQt6>=6.6.0",
+    "PyQt6-WebEngine>=6.6.0",
     "pytest>=7.0",
     "black>=23.0",
     "flake8>=6.0",
@@ -49,8 +51,8 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [project.scripts]
-flight-track-viewer = "ftv:launch_ui"
-ftv-gui = "ftv:launch_ui"
+flight-track-viewer = "ftv.ui.app:main"
+ftv-gui = "ftv.ui.app:main"
 
 [tool.pytest.ini_options]
 addopts = "-q"
