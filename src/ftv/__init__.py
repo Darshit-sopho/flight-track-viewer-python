@@ -9,7 +9,8 @@ __all__ = ['run']
 def launch_ui():
     """Launch the graphical interface"""
     try:
-        from .ui import main
+        # from .ui import main
+        from ftv.ui.app import main
         main()
     except ImportError as e:
         print("=" * 60)
