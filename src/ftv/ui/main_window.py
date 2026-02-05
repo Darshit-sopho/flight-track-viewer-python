@@ -93,7 +93,7 @@ class FlightTrackViewerUI(QMainWindow):
         data, info_text = parse_flight_data(csv_file)
         
         # Update Widgets
-        self.map_view.load_flight_data(data['lats'], data['lons'])
+        self.map_view.load_flight_data(data['lats'], data['lons'], data['heading'])
         self.anim_controls.setup(data['count'])
         
         if len(data['alt']) > 0: self.alt_plot.plot_data(data['alt'], "Altitude (ft)")

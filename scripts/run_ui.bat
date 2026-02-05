@@ -1,6 +1,6 @@
 @echo off
 echo Starting Flight Track Viewer...
-python -m ftv.ui
+python -m ftv.ui.app
 
 if %errorlevel% neq 0 (
     echo.
