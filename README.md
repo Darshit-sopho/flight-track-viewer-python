@@ -2,8 +2,6 @@
 
 A desktop application for visualizing and analyzing flight trajectories from FlightRadar24 CSV data.
 
-![Flight Track Viewer](screenshot.png)
-
 ## Features
 
 ### 🗺️ Interactive Map Visualization
