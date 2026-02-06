@@ -81,19 +81,6 @@ For development with DevTools:
 npm run dev
 ```
 
-## Building for Distribution
-
-Build executable for your platform:
-
-```bash
-npm run build
-```
-
-This creates distributable packages in the `dist/` folder:
-- **Windows**: `.exe` installer
-- **macOS**: `.dmg` installer
-- **Linux**: `.AppImage`
-
 ## CSV File Format
 
 The application expects FlightRadar24 CSV format with tab-separated values:
@@ -135,31 +122,6 @@ Timestamp	UTC	Callsign	Position	Altitude	Speed	Direction
 4. **Export Results**
    - Click save buttons on charts to export
    - Save map view (screenshot recommended for now)
-
-## Customization
-
-### Airplane Icon
-Replace the `AIRPLANE_ICON` constant in `renderer.js` with your base64-encoded airplane image:
-
-```javascript
-const AIRPLANE_ICON = 'data:image/png;base64,YOUR_BASE64_IMAGE_HERE';
-```
-
-### Map Tiles
-Change the tile provider in `renderer.js`:
-
-```javascript
-L.tileLayer('https://YOUR_TILE_SERVER/{z}/{x}/{y}.png', {
-    attribution: 'Your attribution',
-    maxZoom: 19
-}).addTo(map);
-```
-
-### Color Scheme
-Modify colors in `styles.css`:
-- Primary color: `#3498db`
-- Success color: `#27ae60`
-- Background: `#1a1a1a`
 
 ## API Endpoints
 
