@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Track Viewer</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1>✈️ Flight Track Viewer</h1>
+                <div class="file-controls">
+                    <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
+                    <button id="browseBtn" class="btn btn-primary">
+                        <span class="btn-icon">📁</span> Browse CSV File
+                    </button>
+                    <span id="fileName" class="file-name"></span>
+                    <button id="processBtn" class="btn btn-success" disabled>
+                        <span>🚀</span> Process Flight Data
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Left Panel - Map and Controls -->
+            <section class="left-panel">
+                <div class="map-container">
+                    <div id="map"></div>
+                    <div id="mapLoading" class="loading-overlay">
+                        <div class="spinner"></div>
+                        <p>Loading flight data...</p>
+                    </div>
+                </div>
+
+                <div class="map-controls">
+                    <div class="control-group">
+                        <button id="playPauseBtn" class="btn btn-icon-large" disabled>
+                            <span id="playPauseIcon">▶️</span>
+                        </button>
+                        <button id="resetBtn" class="btn btn-secondary" disabled>
+                            <span>🔄</span> Reset
+                        </button>
+                    </div>
+
+                    <div class="control-group slider-group">
+                        <label for="progressSlider">Progress:</label>
+                        <input type="range" id="progressSlider" min="0" max="100" value="0" disabled>
+                        <span id="progressLabel">0%</span>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="speedSelect">Speed:</label>
+                        <select id="speedSelect" disabled>
+                            <option value="0.25">0.25x</option>
+                            <option value="0.5">0.5x</option>
+                            <option value="1" selected>1x</option>
+                            <option value="2">2x</option>
+                            <option value="5">5x</option>
+                            <option value="10">10x</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <button id="saveMapBtn" class="btn btn-success" disabled>
+                            <span>💾</span> Save Map
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Flight Info -->
+                <div id="flightInfo" class="flight-info" style="display: none;">
+                    <h3>Flight Information</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Callsign:</span>
+                            <span id="infoCallsign">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Max Altitude:</span>
+                            <span id="infoMaxAlt">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Max Speed:</span>
+                            <span id="infoMaxSpeed">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Total Distance:</span>
+                            <span id="infoDistance">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Duration:</span>
+                            <span id="infoDuration">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Total Points:</span>
+                            <span id="infoPoints">-</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel - Charts -->
+            <section class="right-panel">
+                <!-- Altitude Chart -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>Altitude vs Time</h3>
+                        <button class="btn btn-small btn-success" id="saveAltBtn" disabled>
+                            <span>💾</span> Save
+                        </button>
+                    </div>
+                    <canvas id="altitudeChart"></canvas>
+                </div>
+
+                <!-- Speed Chart -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>Speed vs Time</h3>
+                        <button class="btn btn-small btn-success" id="saveSpeedBtn" disabled>
+                            <span>💾</span> Save
+                        </button>
+                    </div>
+                    <canvas id="speedChart"></canvas>
+                </div>
+
+                <!-- Distance Chart Button -->
+                <div class="chart-container">
+                    <button id="showDistanceBtn" class="btn btn-primary btn-full" disabled>
+                        <span>📊</span> Show Distance from Reference Point
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <!-- Distance Chart Modal -->
+        <div id="distanceModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Distance from Reference Point vs Time</h2>
+                    <div class="modal-actions">
+                        <button class="btn btn-small btn-success" id="saveDistanceBtn">
+                            <span>💾</span> Save
+                        </button>
+                        <button class="btn btn-small btn-secondary" id="closeDistanceBtn">
+                            <span>✖</span> Close
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <canvas id="distanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://unpkg.com/leaflet-rotatedmarker@0.2.0/leaflet.rotatedmarker.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="renderer.js"></script>
+</body>
+</html>

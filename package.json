@@ -1,0 +1,50 @@
+{
+  "name": "flight-track-viewer",
+  "version": "2.0.0",
+  "description": "Flight Track Viewer Desktop Application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "electron-builder"
+  },
+  "keywords": [
+    "flight",
+    "tracker",
+    "aviation",
+    "electron"
+  ],
+  "author": "Flight Track Viewer",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^35.7.5",
+    "electron-builder": "^26.7.0"
+  },
+  "dependencies": {
+    "axios": "^1.6.2",
+    "html2canvas": "^1.4.1"
+  },
+  "build": {
+    "appId": "com.flighttrack.viewer",
+    "productName": "Flight Track Viewer",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!**/{.git,node_modules,dist,backend}/*"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.png"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icon.png"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "assets/icon.png"
+    }
+  }
+}
