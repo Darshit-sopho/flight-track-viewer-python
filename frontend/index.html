@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flight Track Viewer</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="src/css/styles.css">
 </head>
 <body>
     <div id="app">
@@ -164,6 +164,11 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://unpkg.com/leaflet-rotatedmarker@0.2.0/leaflet.rotatedmarker.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="renderer.js"></script>
+    
+    <!-- Application Modules -->
+    <script src="src/js/map-manager.js"></script>
+    <script src="src/js/chart-manager.js"></script>
+    <script src="src/js/animation-controller.js"></script>
+    <script src="src/js/app.js"></script>
 </body>
 </html>

@@ -23,7 +23,7 @@ function createWindow() {
     icon: path.join(__dirname, 'assets', 'icon.png')
   });
 
-  mainWindow.loadFile('index.html');
+  mainWindow.loadFile(path.join(__dirname, 'frontend', 'index.html'));
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
@@ -40,7 +40,7 @@ function createWindow() {
 }
 
 function startPythonBackend() {
-  const pythonScriptPath = path.join(__dirname, 'backend', 'main.py');
+  const pythonScriptPath = path.join(__dirname, 'backend', 'run.py');
   
   // Check if Python is available
   const pythonCommand = process.platform === 'win32' ? 'python' : 'python3';
@@ -101,6 +101,12 @@ ipcMain.handle('save-image', async (event, dataUrl, defaultName) => {
 
 ipcMain.handle('get-backend-url', () => {
   return `http://127.0.0.1:${PYTHON_PORT}`;
+});
+
+ipcMain.handle('get-airplane-icon-path', () => {
+  return app.isPackaged
+    ? path.join(process.resourcesPath, 'assets', 'plane.png')
+    : path.join(__dirname, 'assets', 'plane.png');
 });
 
 // App lifecycle

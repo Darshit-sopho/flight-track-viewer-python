@@ -1,298 +1,529 @@
-# Flight Track Viewer - Project Structure
+# Flight Track Viewer - Detailed Project Structure
 
-## Complete Directory Layout
+## Complete Directory Layout with Descriptions
 
-```
+```markdown
 flight-track-viewer/
 │
+├── frontend/                         # Frontend Application (Electron Renderer)
+│   │
+│   ├── index.html                    # Main UI Layout
+│   │   ├── Header section:
+│   │   │   ├── App title
+│   │   │   ├── Browse CSV button
+│   │   │   ├── File name display
+│   │   │   └── Process button
+│   │   ├── Left panel:
+│   │   │   ├── Map container (Leaflet)
+│   │   │   ├── Animation controls:
+│   │   │   │   ├── Play/Pause button
+│   │   │   │   ├── Reset button
+│   │   │   │   ├── Progress slider
+│   │   │   │   ├── Speed selector
+│   │   │   │   └── Save map button
+│   │   │   └── Flight information panel
+│   │   ├── Right panel:
+│   │   │   ├── Altitude chart container
+│   │   │   ├── Speed chart container
+│   │   │   └── Distance chart button
+│   │   └── Distance modal (popup)
+│   │
+│   ├── src/                          # Frontend Source Code
+│   │   │
+│   │   ├── js/                       # JavaScript Modules
+│   │   │   │
+│   │   │   ├── app.js                # Main Application Controller
+│   │   │   │   ├── Application initialization
+│   │   │   │   ├── Backend health check
+│   │   │   │   ├── Component coordination:
+│   │   │   │   │   ├── MapManager integration
+│   │   │   │   │   ├── ChartManager integration
+│   │   │   │   │   └── AnimationController integration
+│   │   │   │   ├── Event handler setup:
+│   │   │   │   │   ├── File selection (browseFile)
+│   │   │   │   │   ├── CSV processing (processFile)
+│   │   │   │   │   ├── Animation controls
+│   │   │   │   │   └── Save operations
+│   │   │   │   ├── Backend communication (Axios):
+│   │   │   │   │   └── POST /api/analyze-flight
+│   │   │   │   ├── Visualization initialization
+│   │   │   │   ├── Flight info display
+│   │   │   │   └── Image export handlers
+│   │   │   │
+│   │   │   ├── map-manager.js        # Map Visualization Module
+│   │   │   │   ├── Leaflet map initialization
+│   │   │   │   ├── Tile layer setup (OpenStreetMap)
+│   │   │   │   ├── Flight path rendering:
+│   │   │   │   │   ├── createFlightPath()
+│   │   │   │   │   └── Full polyline display
+│   │   │   │   ├── Aircraft marker management:
+│   │   │   │   │   ├── createAircraftMarker()
+│   │   │   │   │   ├── updateAircraftPosition()
+│   │   │   │   │   └── Rotation based on heading
+│   │   │   │   ├── Progress path visualization:
+│   │   │   │   │   ├── updateProgressPath()
+│   │   │   │   │   ├── Gray path (未traveled)
+│   │   │   │   │   └── Blue path (traveled)
+│   │   │   │   ├── Map layer control
+│   │   │   │   ├── Bounds fitting
+│   │   │   │   └── Window resize handling
+│   │   │   │
+│   │   │   ├── chart-manager.js      # Chart Visualization Module
+│   │   │   │   ├── Chart.js configuration
+│   │   │   │   ├── Common chart options:
+│   │   │   │   │   ├── Dark theme colors
+│   │   │   │   │   ├── Grid styling
+│   │   │   │   │   ├── Tooltip configuration
+│   │   │   │   │   └── Axis setup
+│   │   │   │   ├── Chart creation methods:
+│   │   │   │   │   ├── createAltitudeChart()
+│   │   │   │   │   │   ├── Line chart, blue color
+│   │   │   │   │   │   ├── Y-axis: Altitude (ft)
+│   │   │   │   │   │   └── X-axis: Time (seconds)
+│   │   │   │   │   ├── createSpeedChart()
+│   │   │   │   │   │   ├── Line chart, green color
+│   │   │   │   │   │   ├── Y-axis: Speed (kts)
+│   │   │   │   │   │   └── X-axis: Time (seconds)
+│   │   │   │   │   └── createDistanceChart()
+│   │   │   │   │       ├── Line chart, red color
+│   │   │   │   │       ├── Y-axis: Distance (m)
+│   │   │   │   │       └── X-axis: Time (seconds)
+│   │   │   │   ├── Chart instance management
+│   │   │   │   ├── getChart() accessor
+│   │   │   │   └── destroyAll() cleanup
+│   │   │   │
+│   │   │   └── animation-controller.js # Animation Logic Module
+│   │   │       ├── Animation state management:
+│   │   │       │   ├── currentIndex tracking
+│   │   │       │   ├── isPlaying state
+│   │   │       │   ├── speed multiplier
+│   │   │       │   └── animationFrameId
+│   │   │       ├── Playback controls:
+│   │   │       │   ├── play() - Start animation
+│   │   │       │   ├── pause() - Pause animation
+│   │   │       │   ├── reset() - Reset to start
+│   │   │       │   ├── setSpeed() - Change speed (0.25x-10x)
+│   │   │       │   └── seek() - Jump to position
+│   │   │       ├── Animation loop:
+│   │   │       │   ├── animate() - Main loop
+│   │   │       │   ├── requestAnimationFrame
+│   │   │       │   ├── Frame increment by speed
+│   │   │       │   └── Position update trigger
+│   │   │       ├── Position updates:
+│   │   │       │   ├── updatePosition()
+│   │   │       │   ├── MapManager integration
+│   │   │       │   └── Progress path update
+│   │   │       ├── Callback system:
+│   │   │       │   └── onUpdate(state) to app.js
+│   │   │       └── State accessor (getState)
+│   │   │
+│   │   └── css/                      # Stylesheets
+│   │       └── styles.css            # Application Styling
+│   │           ├── Global styles:
+│   │           │   ├── CSS reset
+│   │           │   ├── Dark theme (#1a1a1a)
+│   │           │   └── Font family
+│   │           ├── Header styles:
+│   │           │   ├── Gradient background
+│   │           │   ├── File controls layout
+│   │           │   └── Button positioning
+│   │           ├── Layout styles:
+│   │           │   ├── Main content flex
+│   │           │   ├── Left panel (60%)
+│   │           │   └── Right panel (38%)
+│   │           ├── Map container:
+│   │           │   ├── Relative positioning
+│   │           │   ├── Loading overlay
+│   │           │   └── Border radius
+│   │           ├── Control panels:
+│   │           │   ├── Map controls bar
+│   │           │   ├── Slider styling
+│   │           │   └── Button groups
+│   │           ├── Flight info display:
+│   │           │   ├── Info grid layout
+│   │           │   └── Statistics styling
+│   │           ├── Chart containers:
+│   │           │   ├── Chart background
+│   │           │   ├── Chart headers
+│   │           │   └── Canvas max-height
+│   │           ├── Button styles:
+│   │           │   ├── Primary (blue)
+│   │           │   ├── Secondary (gray)
+│   │           │   ├── Success (green)
+│   │           │   ├── Hover effects
+│   │           │   └── Disabled states
+│   │           ├── Modal styles:
+│   │           │   ├── Overlay background
+│   │           │   ├── Modal content box
+│   │           │   ├── Animations (fadeIn, slideIn)
+│   │           │   └── Close button
+│   │           └── Responsive design:
+│   │               ├── Media queries
+│   │               └── Mobile adaptations
+│   │
+│   └── public/                       # Static Assets (empty for now)
+│       └── (Place icons, images here)
+│
 ├── backend/                          # Python FastAPI Backend
-│   ├── main.py                       # Main FastAPI application
-│   │   ├── /api/analyze-flight      # CSV processing endpoint
-│   │   ├── /health                  # Health check endpoint
-│   │   └── Flight calculations:
-│   │       ├── Heading calculation (bearing between points)
-│   │       ├── Distance calculation (Haversine formula)
-│   │       └── Time-series analysis
-│   └── requirements.txt              # Python dependencies
+│   │
+│   ├── src/                          # Backend Source Code
+│   │   │
+│   │   ├── main.py                   # FastAPI Application & Routes
+│   │   │   ├── FastAPI app initialization:
+│   │   │   │   ├── Title & description
+│   │   │   │   ├── Version info
+│   │   │   │   └── CORS middleware setup
+│   │   │   ├── Route endpoints:
+│   │   │   │   ├── GET / - API info
+│   │   │   │   ├── GET /health - Health check
+│   │   │   │   └── POST /api/analyze-flight:
+│   │   │   │       ├── Accept CSV file upload
+│   │   │   │       ├── Call FlightDataProcessor
+│   │   │   │       ├── Return JSON response
+│   │   │   │       └── Error handling
+│   │   │   └── FlightDataProcessor integration
+│   │   │
+│   │   ├── data_processor.py         # CSV Processing Pipeline
+│   │   │   ├── FlightDataProcessor class:
+│   │   │   │   ├── CSV parsing:
+│   │   │   │   │   ├── detect_delimiter() - Auto-detect , or \t
+│   │   │   │   │   ├── parse_csv() - Load with pandas
+│   │   │   │   │   └── validate_csv() - Check columns
+│   │   │   │   ├── Position processing:
+│   │   │   │   │   ├── process_positions()
+│   │   │   │   │   ├── Parse "lat,lon" strings
+│   │   │   │   │   ├── Create Latitude/Longitude columns
+│   │   │   │   │   └── Remove invalid rows
+│   │   │   │   ├── Calculations:
+│   │   │   │   │   ├── calculate_headings()
+│   │   │   │   │   │   ├── Call flight_utils.calculate_heading()
+│   │   │   │   │   │   ├── Bearing between consecutive points
+│   │   │   │   │   │   └── Use Direction for first point
+│   │   │   │   │   ├── calculate_distances()
+│   │   │   │   │   │   ├── Call flight_utils.calculate_distance()
+│   │   │   │   │   │   ├── Haversine formula
+│   │   │   │   │   │   └── Distance from start point
+│   │   │   │   │   └── calculate_time_series()
+│   │   │   │   │       ├── Relative timestamps
+│   │   │   │   │       └── Time from start
+│   │   │   │   ├── Output generation:
+│   │   │   │   │   ├── generate_statistics()
+│   │   │   │   │   │   ├── Total points, duration
+│   │   │   │   │   │   ├── Max altitude, max speed
+│   │   │   │   │   │   ├── Total distance
+│   │   │   │   │   │   └── Bounds (N/S/E/W)
+│   │   │   │   │   ├── generate_plot_data()
+│   │   │   │   │   │   ├── Altitude plot (x, y, label)
+│   │   │   │   │   │   ├── Speed plot
+│   │   │   │   │   │   └── Distance plot
+│   │   │   │   │   └── generate_flight_points()
+│   │   │   │   │       └── Array of point objects
+│   │   │   │   └── process_flight_data() - Main pipeline
+│   │   │   └── Required columns validation
+│   │   │
+│   │   ├── flight_utils.py           # Calculation Utilities
+│   │   │   ├── calculate_heading():
+│   │   │   │   ├── Input: lat1, lon1, lat2, lon2
+│   │   │   │   ├── Forward azimuth formula
+│   │   │   │   ├── Convert to radians
+│   │   │   │   ├── atan2 calculation
+│   │   │   │   ├── Convert to degrees
+│   │   │   │   └── Normalize to 0-360°
+│   │   │   ├── calculate_distance():
+│   │   │   │   ├── Input: lat1, lon1, lat2, lon2
+│   │   │   │   ├── Haversine formula
+│   │   │   │   ├── Earth radius: 6,371,000m
+│   │   │   │   ├── Great-circle distance
+│   │   │   │   └── Return meters
+│   │   │   └── parse_position():
+│   │   │       ├── Parse "lat,lon" string
+│   │   │       ├── Handle quoted values
+│   │   │       ├── Strip whitespace
+│   │   │       └── Return (lat, lon) tuple
+│   │   │
+│   │   └── __init__.py               # Package Initialization
+│   │       ├── Import app from main
+│   │       ├── Import FlightDataProcessor
+│   │       ├── Import utility functions
+│   │       ├── Define __version__
+│   │       └── Define __all__ exports
+│   │
+│   ├── run.py                        # Backend Entry Point
+│   │   ├── Import uvicorn
+│   │   ├── Import app from src.main
+│   │   ├── Run server:
+│   │   │   ├── Host: 127.0.0.1
+│   │   │   ├── Port: 8000
+│   │   │   └── Log level: info
+│   │   └── __main__ guard
+│   │
+│   └── requirements.txt              # Python Dependencies
+│       ├── fastapi>=0.100.0
+│       ├── uvicorn[standard]>=0.23.0
+│       ├── pandas>=2.0.0
+│       ├── numpy>=1.24.0
+│       └── python-multipart>=0.0.6
+│
+├── docs/                             # Documentation
+│   ├── ARCHITECTURE.md               # Technical Architecture
+│   │   ├── Module hierarchies
+│   │   ├── API reference
+│   │   ├── Data flow diagrams
+│   │   ├── Dependencies
+│   │   └── Performance notes
+│   ├── README.md                     # Comprehensive Guide
+│   ├── QUICKSTART.md                 # 5-minute Setup
+│   ├── SETUP.md                      # Detailed Setup
+│   ├── DEPLOYMENT.md                 # Build & Distribution
+│   ├── CHANGELOG.md                  # Version History
+│   └── PROJECT_STRUCTURE.md          # This file
+│
+├── assets/                           # Application Assets
+│   └── icon.png                      # App icon (to be added)
 │
 ├── main.js                           # Electron Main Process
-│   ├── Window management
-│   ├── Python subprocess management
+│   ├── Window management:
+│   │   ├── createWindow()
+│   │   │   ├── Size: 1400x900
+│   │   │   ├── Min size: 1200x700
+│   │   │   ├── webPreferences setup
+│   │   │   └── Load frontend/index.html
+│   │   └── Window lifecycle
+│   ├── Python subprocess management:
+│   │   ├── startPythonBackend()
+│   │   │   ├── Spawn python3 backend/run.py
+│   │   │   ├── Port: 8000
+│   │   │   ├── stdout/stderr logging
+│   │   │   └── Process cleanup
+│   │   └── 2-second startup delay
 │   ├── IPC handlers:
-│   │   ├── select-csv-file          # File dialog
-│   │   ├── save-image               # Image export
-│   │   └── get-backend-url          # Backend URL
-│   └── Lifecycle management
-│
-├── renderer.js                       # Frontend Logic (Renderer Process)
-│   ├── Map initialization (Leaflet)
-│   ├── Animation engine:
-│   │   ├── Play/Pause controls
-│   │   ├── Speed multipliers
-│   │   ├── Progress tracking
-│   │   └── Aircraft marker rotation
-│   ├── Chart creation (Chart.js):
-│   │   ├── Altitude chart
-│   │   ├── Speed chart
-│   │   └── Distance chart
-│   ├── Backend communication (Axios)
-│   └── Image export functionality
-│
-├── index.html                        # Main UI Layout
-│   ├── Header (file controls)
-│   ├── Left panel:
-│   │   ├── Map container
-│   │   ├── Animation controls
-│   │   └── Flight information
-│   ├── Right panel:
-│   │   ├── Altitude chart
-│   │   ├── Speed chart
-│   │   └── Distance chart button
-│   └── Distance modal
-│
-├── styles.css                        # Application Styling
-│   ├── Dark theme
-│   ├── Responsive layout
-│   ├── Control panels
-│   ├── Chart containers
-│   └── Modal styles
+│   │   ├── select-csv-file:
+│   │   │   ├── Open file dialog
+│   │   │   ├── Filter: .csv files
+│   │   │   └── Return file path
+│   │   ├── save-image:
+│   │   │   ├── Save dialog
+│   │   │   ├── Convert base64 to buffer
+│   │   │   ├── Write to file
+│   │   │   └── Return success status
+│   │   └── get-backend-url:
+│   │       └── Return http://127.0.0.1:8000
+│   ├── App lifecycle:
+│   │   ├── whenReady() - Start backend & window
+│   │   ├── activate() - macOS reopen
+│   │   ├── window-all-closed() - Quit app
+│   │   └── quit() - Kill python process
+│   └── Error handling
 │
 ├── package.json                      # Node.js Configuration
-│   ├── Dependencies
-│   ├── Build scripts
-│   └── Electron-builder config
+│   ├── Metadata:
+│   │   ├── name: "flight-track-viewer"
+│   │   ├── version: "1.0.1"
+│   │   ├── description
+│   │   └── author
+│   ├── Scripts:
+│   │   ├── start - electron .
+│   │   ├── dev - electron . --dev
+│   │   └── build - electron-builder
+│   ├── Dependencies:
+│   │   ├── axios: ^1.6.2
+│   │   └── html2canvas: ^1.4.1
+│   ├── DevDependencies:
+│   │   ├── electron: ^28.0.0
+│   │   └── electron-builder: ^24.9.1
+│   └── Build configuration:
+│       ├── appId
+│       ├── productName
+│       ├── directories
+│       ├── files to include
+│       └── Platform-specific settings:
+│           ├── win: NSIS installer
+│           ├── mac: DMG image
+│           └── linux: AppImage
 │
 ├── sample_flight.csv                 # Test Data
-│   └── FlightRadar24 CSV format
+│   ├── FlightRadar24 format
+│   ├── Comma-separated values
+│   ├── 1,214 data points
+│   ├── Columns:
+│   │   ├── Timestamp (Unix)
+│   │   ├── UTC (ISO 8601)
+│   │   ├── Callsign (N503SP)
+│   │   ├── Position ("lat,lon")
+│   │   ├── Altitude (feet)
+│   │   ├── Speed (knots)
+│   │   └── Direction (degrees)
+│   └── Full flight trajectory example
 │
-├── README.md                         # Main Documentation
-├── QUICKSTART.md                     # Setup Guide
-└── .gitignore                        # Git ignore rules
+├── .gitignore                        # Git Ignore Rules
+│   ├── node_modules/
+│   ├── __pycache__/
+│   ├── dist/, build/
+│   ├── venv/, env/
+│   ├── .vscode/, .idea/
+│   ├── *.log
+│   ├── .env files
+│   └── OS files (.DS_Store, etc.)
+│
+└── README.md                         # Main Documentation
+    ├── Project overview
+    ├── Features list
+    ├── Project structure diagram
+    ├── Quick start guide
+    ├── Module overview
+    ├── Development instructions
+    ├── Building for production
+    ├── Adding new features
+    ├── Contributing guidelines
+    ├── Troubleshooting
+    ├── License information
+    └── Links to detailed docs
 
 ```
 
-## Component Interactions
+## Module Communication Flow
 
-### Data Flow
-
-1. **CSV Upload**
-   ```
-   User → Browse Button → IPC Handler → File Dialog → File Path
-   ```
-
-2. **Processing**
-   ```
-   File → FormData → Axios POST → FastAPI Backend → Pandas Processing
-   → Calculations → JSON Response → Frontend State Update
-   ```
-
-3. **Visualization**
-   ```
-   Flight Data → Leaflet Map (Path + Marker)
-                → Chart.js (3 Charts)
-                → Flight Info Display
-   ```
-
-4. **Animation**
-   ```
-   requestAnimationFrame → Update Point Index → Move Marker
-   → Rotate Icon → Update Progress → Repeat
-   ```
-
-## Key Technologies
-
-### Frontend Stack
-- **Electron** - Desktop app framework
-- **Leaflet.js** - Interactive maps
-- **Chart.js** - Data visualization
-- **Vanilla JavaScript** - No heavy frameworks for simplicity
-
-### Backend Stack
-- **FastAPI** - Modern Python web framework
-- **Pandas** - CSV parsing and data manipulation
-- **NumPy** - Numerical calculations
-
-### Communication
-- **IPC** (Inter-Process Communication) - Electron main ↔ renderer
-- **HTTP/JSON** - Frontend ↔ Backend API
-- **Axios** - HTTP client library
-
-## State Management
-
-### Global State (renderer.js)
-```javascript
-{
-  flightData: null,           // All flight point data
-  map: null,                  // Leaflet map instance
-  flightPath: null,           // Polyline layer
-  aircraftMarker: null,       // Marker with rotation
-  currentPointIndex: 0,       // Animation position
-  isPlaying: false,           // Animation state
-  animationSpeed: 1,          // Speed multiplier
-  charts: {                   // Chart.js instances
-    altitude: null,
-    speed: null,
-    distance: null
-  }
-}
+```
+User Action (Frontend)
+    ↓
+app.js (Main Controller)
+    ↓
+├─→ MapManager (Map operations)
+│   └─→ Leaflet.js
+│
+├─→ ChartManager (Chart operations)
+│   └─→ Chart.js
+│
+├─→ AnimationController (Animation)
+│   └─→ requestAnimationFrame
+│
+└─→ Backend API (Data processing)
+    ↓
+    main.py (Routes)
+    ↓
+    data_processor.py (Pipeline)
+    ↓
+    flight_utils.py (Calculations)
+    ↓
+    JSON Response
+    ↓
+    app.js (Update UI)
 ```
 
-## API Specification
+## Data Flow
 
-### POST /api/analyze-flight
-
-**Request:**
-- Content-Type: multipart/form-data
-- Body: CSV file
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "flightPoints": [
-      {
-        "timestamp": 1768060778,
-        "utc": "2026-01-10T15:59:38Z",
-        "callsign": "N503SP",
-        "latitude": 42.187042,
-        "longitude": -71.176376,
-        "altitude": 0,
-        "speed": 0,
-        "heading": 61.0,
-        "distanceFromStart": 0.0,
-        "relativeTime": 0.0
-      }
-    ],
-    "statistics": {
-      "totalPoints": 1212,
-      "callsign": "N503SP",
-      "maxAltitude": 3575,
-      "maxSpeed": 128,
-      "totalDistance": 45230.5,
-      "duration": 3600.0,
-      "startTime": "2026-01-10T15:59:38Z",
-      "endTime": "2026-01-10T16:59:38Z",
-      "bounds": {
-        "north": 42.2,
-        "south": 42.1,
-        "east": -71.1,
-        "west": -71.2
-      }
-    },
-    "plots": {
-      "altitude": {
-        "x": [0, 1, 2, ...],
-        "y": [0, 100, 200, ...],
-        "label": "Altitude (ft)"
-      },
-      "speed": { ... },
-      "distance": { ... }
-    }
-  }
-}
+```
+CSV File
+    ↓
+[Frontend] app.js
+    ↓ HTTP POST
+[Backend] main.py
+    ↓
+[Backend] data_processor.py
+    ├─→ Parse CSV
+    ├─→ Validate
+    ├─→ Calculate headings (flight_utils)
+    ├─→ Calculate distances (flight_utils)
+    ├─→ Generate statistics
+    └─→ Generate plots
+    ↓
+JSON Response
+    ↓
+[Frontend] app.js
+    ├─→ MapManager.createFlightPath()
+    ├─→ MapManager.createAircraftMarker()
+    ├─→ ChartManager.createAltitudeChart()
+    ├─→ ChartManager.createSpeedChart()
+    └─→ AnimationController.setFlightData()
+    ↓
+Visualization Ready
 ```
 
-## Calculation Algorithms
+## Key Design Patterns
 
-### Heading (Bearing) Calculation
-```python
-def calculate_heading(lat1, lon1, lat2, lon2):
-    # Convert to radians
-    lat1_rad = radians(lat1)
-    lat2_rad = radians(lat2)
-    lon_diff = radians(lon2 - lon1)
-    
-    # Calculate bearing
-    x = sin(lon_diff) * cos(lat2_rad)
-    y = cos(lat1_rad) * sin(lat2_rad) - 
-        sin(lat1_rad) * cos(lat2_rad) * cos(lon_diff)
-    
-    heading = atan2(x, y)
-    heading = degrees(heading)
-    heading = (heading + 360) % 360  # Normalize to 0-360
-    
-    return heading
+### 1. **Separation of Concerns**
+- Each module has a single responsibility
+- Clear boundaries between components
+- Independent testing possible
+
+### 2. **Module Pattern**
+- Each JS file exports a class
+- Clean public API
+- Private state encapsulation
+
+### 3. **Observer Pattern**
+- AnimationController uses callbacks
+- app.js coordinates updates
+- Loose coupling between modules
+
+### 4. **Pipeline Pattern**
+- data_processor.py chains operations
+- Each step transforms data
+- Clear data flow
+
+### 5. **Factory Pattern**
+- ChartManager creates chart instances
+- Common configuration
+- Easy to add new chart types
+
+## File Size Reference
+
+```
+Frontend:
+├── app.js                    ~8 KB   (Main controller)
+├── map-manager.js            ~5 KB   (Map logic)
+├── chart-manager.js          ~4 KB   (Chart logic)
+├── animation-controller.js   ~4 KB   (Animation logic)
+├── styles.css                ~7 KB   (All styles)
+└── index.html                ~6 KB   (UI structure)
+
+Backend:
+├── main.py                   ~2 KB   (Routes only)
+├── data_processor.py         ~8 KB   (Processing pipeline)
+└── flight_utils.py           ~3 KB   (Pure functions)
+
+Documentation:
+├── README.md                 ~8 KB
+├── ARCHITECTURE.md           ~15 KB
+└── Other docs                ~20 KB total
+
+Total Project: ~100 KB (excluding dependencies)
 ```
 
-### Distance Calculation (Haversine)
-```python
-def calculate_distance(lat1, lon1, lat2, lon2):
-    R = 6371000  # Earth's radius in meters
-    
-    # Convert to radians
-    lat1_rad = radians(lat1)
-    lat2_rad = radians(lat2)
-    dlat = radians(lat2 - lat1)
-    dlon = radians(lon2 - lon1)
-    
-    # Haversine formula
-    a = sin(dlat/2)**2 + cos(lat1_rad) * cos(lat2_rad) * sin(dlon/2)**2
-    c = 2 * atan2(sqrt(a), sqrt(1-a))
-    
-    distance = R * c  # Distance in meters
-    return distance
+## Dependencies Tree
+
 ```
+Electron App
+├── Main Process (main.js)
+│   ├── electron
+│   ├── child_process (Python backend)
+│   └── fs (file operations)
+│
+└── Renderer Process (frontend)
+    ├── app.js
+    │   ├── axios (HTTP)
+    │   ├── html2canvas (screenshots)
+    │   ├── MapManager
+    │   ├── ChartManager
+    │   └── AnimationController
+    │
+    ├── MapManager
+    │   └── Leaflet.js
+    │       └── leaflet-rotatedmarker
+    │
+    └── ChartManager
+        └── Chart.js
 
-## Performance Considerations
-
-### Map Rendering
-- Uses canvas-based tile rendering (Leaflet default)
-- Marker rotation via CSS transform (hardware accelerated)
-- Progressive path rendering for smooth animation
-
-### Chart Rendering
-- Point radius set to 0 for datasets >100 points
-- Line tension for smooth curves
-- Responsive canvas sizing
-
-### Animation
-- RequestAnimationFrame for 60 FPS
-- Integer index interpolation for smooth movement
-- Cancellable animation frames
-
-### Data Loading
-- Async/await for non-blocking operations
-- Loading overlay during processing
-- Progress feedback to user
-
-## Build Configuration
-
-### Electron Builder Settings
-```json
-{
-  "appId": "com.flighttrack.viewer",
-  "productName": "Flight Track Viewer",
-  "files": [
-    "**/*",
-    "!**/{.git,node_modules,dist,backend}/*"
-  ],
-  "win": { "target": "nsis" },
-  "mac": { "target": "dmg" },
-  "linux": { "target": "AppImage" }
-}
+Python Backend
+├── FastAPI (web framework)
+├── Uvicorn (ASGI server)
+├── Pandas (data processing)
+├── NumPy (calculations)
+└── python-multipart (file uploads)
 ```
-
-## Future Enhancements
-
-### Planned Features
-1. Video export (record animation)
-2. Multiple flight overlay
-3. 3D terrain visualization
-4. GPX/KML import/export
-5. Real-time tracking integration
-6. Weather data overlay
-7. Airport database integration
-8. Flight plan validation
-
-### Code Optimization Opportunities
-1. Web Workers for heavy calculations
-2. Virtual scrolling for large datasets
-3. Canvas-based chart rendering for >10k points
-4. IndexedDB for local flight history
-5. Streaming CSV parsing for large files
 
 ---
 
-**Version:** 1.0.0
-**Last Updated:** 2026-02-05
+**Version:** 2.0.0 
+**Last Updated:** 2026-02-06  
+**Maintained by:** Flight Track Viewer Team

@@ -1,242 +1,293 @@
-# Flight Track Viewer
+# ✈️ Flight Track Viewer
 
-A desktop application for visualizing and analyzing flight trajectories from FlightRadar24 CSV data.
+A modular desktop application for visualizing and analyzing flight trajectories from FlightRadar24 CSV data.
 
-## Features
+[![Version](https://img.shields.io/badge/version-1.0.1-blue.svg)](https://github.com/Darshit-sopho/flight-track-viewer-python)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-### 🗺️ Interactive Map Visualization
-- Live flight path animation with airplane marker
-- Real-time heading calculations and aircraft rotation
-- Zoom and pan controls
-- OpenStreetMap integration via Leaflet.js
+![Flight Track Viewer](docs/screenshot.png)
 
-### 📊 Real-time Charts
-- **Altitude vs Time** - Track elevation changes throughout the flight
-- **Speed vs Time** - Monitor airspeed variations
-- **Distance from Reference** - Measure distance from starting point
+## 🌟 Features
 
-### 🎮 Animation Controls
-- Play/Pause animation
-- Speed multipliers (0.25x to 10x)
-- Progress slider for scrubbing through the flight
-- Reset to beginning
+- **Interactive Map Visualization** - Live flight path animation with Leaflet.js
+- **Real-time Charts** - Altitude, Speed, and Distance tracking
+- **Animation Controls** - Play/pause, speed control (0.25x-10x), progress scrubbing
+- **High-Quality Exports** - Save maps and charts as PNG images
+- **Modular Architecture** - Clean separation of concerns for easy maintenance
+- **Cross-Platform** - Works on Windows, macOS, and Linux
 
-### 💾 Export Capabilities
-- Save map view as image
-- Export all charts as PNG images
-- Preserve flight analysis data
-
-## Architecture
+## 📁 Project Structure
 
 ```
-Frontend (Electron + React/JavaScript)
-├─ Drag & drop CSV upload
-├─ Leaflet.js map (60 FPS animation)
-├─ Chart.js plots
-├─ Animation controls
-└─ Responsive design
-
-Backend (Python FastAPI)
-├─ POST /api/analyze-flight
-├─ Parse CSV (pandas)
-├─ Calculate headings
-├─ Flight track analysis
-└─ Return complete JSON
+flight-track-viewer/
+├── frontend/                    # Frontend application
+│   ├── src/
+│   │   ├── js/                  # JavaScript modules
+│   │   │   ├── app.js           # Main application coordinator
+│   │   │   ├── map-manager.js   # Map and marker management
+│   │   │   ├── chart-manager.js # Chart creation and updates
+│   │   │   └── animation-controller.js # Animation logic
+│   │   └── css/
+│   │       └── styles.css       # Application styles
+│   ├── public/                  # Static assets
+│   └── index.html               # Main HTML file
+│
+├── backend/                     # Python FastAPI backend
+│   ├── src/
+│   │   ├── main.py              # FastAPI app and routes
+│   │   ├── data_processor.py    # CSV processing pipeline
+│   │   ├── flight_utils.py      # Calculation utilities
+│   │   └── __init__.py          # Package initialization
+│   ├── run.py                   # Backend entry point
+│   └── requirements.txt         # Python dependencies
+│
+├── docs/                        # Documentation
+│   ├── README.md                # Detailed documentation
+│   ├── QUICKSTART.md            # Quick setup guide
+│   ├── PROJECT_STRUCTURE.md     # Technical details
+│   ├── DEPLOYMENT.md            # Build and distribution
+│   ├── CHANGELOG.md             # Version history
+│   └── SETUP.md                 # Setup instructions
+│
+├── assets/                      # Application assets
+│   └── icon.png                 # App icon
+│
+├── main.js                      # Electron main process
+├── package.json                 # Node.js configuration
+├── sample_flight.csv            # Sample data for testing
+└── README.md                    # This file
 ```
 
-## Installation
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- **Node.js** (v16 or higher)
-- **Python** (3.8 or higher)
+- **Node.js** 16+ ([Download](https://nodejs.org/))
+- **Python** 3.8+ ([Download](https://www.python.org/))
 - **npm** or **yarn**
 
-### Backend Setup
+### Installation
 
-1. Install Python dependencies:
-```bash
-cd backend
-pip install -r requirements.txt
-```
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Darshit-sopho/flight-track-viewer-python.git
+   cd flight-track-viewer-python
+   ```
 
-2. The backend will automatically start when you launch the Electron app.
+2. **Install Backend Dependencies**
+   ```bash
+   cd backend
+   pip install -r requirements.txt
+   cd ..
+   ```
 
-### Frontend Setup
+3. **Install Frontend Dependencies**
+   ```bash
+   npm install
+   ```
 
-1. Install Node.js dependencies:
-```bash
-npm install
-```
+4. **Run the Application**
+   ```bash
+   npm start
+   ```
 
-2. Start the application:
-```bash
-npm start
-```
+5. **Test with Sample Data**
+   - Click "Browse CSV File"
+   - Select `sample_flight.csv`
+   - Click "Process Flight Data"
+   - Watch the flight animation! ✨
 
-For development with DevTools:
+## 📖 Documentation
+
+- **[Quick Start Guide](docs/QUICKSTART.md)** - Get up and running in 5 minutes
+- **[Setup Instructions](docs/SETUP.md)** - Detailed installation and configuration
+- **[Project Structure](docs/PROJECT_STRUCTURE.md)** - Technical architecture details
+- **[Deployment Guide](docs/DEPLOYMENT.md)** - Building and distributing
+- **[Changelog](docs/CHANGELOG.md)** - Version history and updates
+
+## 🎯 Module Overview
+
+### Frontend Modules
+
+#### **app.js** - Main Application Controller
+- Coordinates all components
+- Handles user interactions
+- Manages application state
+- Processes backend responses
+
+#### **map-manager.js** - Map Management
+- Leaflet map initialization
+- Flight path rendering
+- Aircraft marker with rotation
+- Progress path visualization
+
+#### **chart-manager.js** - Chart Management
+- Chart.js configuration
+- Altitude/Speed/Distance charts
+- Responsive chart updates
+- Chart export functionality
+
+#### **animation-controller.js** - Animation Logic
+- Frame-by-frame animation
+- Speed control (0.25x-10x)
+- Progress tracking
+- Play/pause/reset controls
+
+### Backend Modules
+
+#### **main.py** - API Routes
+- FastAPI application setup
+- `/api/analyze-flight` endpoint
+- `/health` health check
+- CORS configuration
+
+#### **data_processor.py** - Data Processing
+- CSV parsing (comma/tab-separated)
+- Flight data validation
+- Statistics generation
+- Plot data preparation
+
+#### **flight_utils.py** - Calculations
+- Heading calculation (bearing formula)
+- Distance calculation (Haversine)
+- Position parsing
+
+## 🔧 Development
+
+### Run in Development Mode
 ```bash
 npm run dev
 ```
 
-## CSV File Format
-
-The application expects FlightRadar24 CSV format with tab-separated values:
-
-```
-Timestamp	UTC	Callsign	Position	Altitude	Speed	Direction
-1768060778	2026-01-10T15:59:38Z	N503SP	42.187042,-71.176376	0	0	61
-1768060922	2026-01-10T16:02:02Z	N503SP	42.187256,-71.176399	0	4	334
-...
+### Backend Development
+```bash
+cd backend
+python run.py
 ```
 
-### Required Columns:
-- **Timestamp** - Unix timestamp
-- **UTC** - ISO 8601 datetime string
-- **Callsign** - Aircraft identifier
-- **Position** - Latitude,Longitude (comma-separated)
-- **Altitude** - Altitude in feet
-- **Speed** - Ground speed in knots
-- **Direction** - Initial heading in degrees
-
-## Usage
-
-1. **Load CSV File**
-   - Click "Browse CSV File" button
-   - Select your FlightRadar24 CSV file
-   - Click "Process Flight Data"
-
-2. **View Animation**
-   - Flight path appears on map
-   - Aircraft marker shows current position
-   - Press Play to start animation
-   - Adjust speed with speed selector
-
-3. **Analyze Data**
-   - View altitude and speed charts on the right panel
-   - Click "Show Distance from Reference Point" for distance analysis
-   - Check Flight Information panel for statistics
-
-4. **Export Results**
-   - Click save buttons on charts to export
-   - Save map view (screenshot recommended for now)
-
-## API Endpoints
-
-### Backend API
-
-**POST /api/analyze-flight**
-- Accepts: CSV file (multipart/form-data)
-- Returns: JSON with flight analysis
-
-```json
-{
-  "success": true,
-  "data": {
-    "flightPoints": [...],
-    "statistics": {
-      "totalPoints": 1212,
-      "callsign": "N503SP",
-      "maxAltitude": 3575,
-      "maxSpeed": 128,
-      "totalDistance": 45230.5,
-      "duration": 3600,
-      ...
-    },
-    "plots": {
-      "altitude": { "x": [...], "y": [...] },
-      "speed": { "x": [...], "y": [...] },
-      "distance": { "x": [...], "y": [...] }
-    }
-  }
-}
+### Frontend Testing
+```bash
+# Open index.html in browser with Live Server
+# Or use the Electron app
 ```
 
-**GET /health**
-- Returns: Backend health status
+## 📦 Building for Production
 
-## Technical Details
-
-### Heading Calculation
-The application calculates bearing/heading between GPS coordinates using the forward azimuth formula:
-
-```python
-θ = atan2(sin(Δλ)·cos(φ2), cos(φ1)·sin(φ2) − sin(φ1)·cos(φ2)·cos(Δλ))
+```bash
+npm run build
 ```
 
-### Distance Calculation
-Haversine formula for great-circle distance:
+Creates distributable packages in `dist/`:
+- **Windows**: `.exe` installer
+- **macOS**: `.dmg` image
+- **Linux**: `.AppImage` file
 
-```python
-a = sin²(Δφ/2) + cos(φ1)·cos(φ2)·sin²(Δλ/2)
-c = 2·atan2(√a, √(1−a))
-d = R·c
+## 🧩 Adding New Features
+
+### Adding a New Frontend Module
+
+1. Create module in `frontend/src/js/your-module.js`
+2. Export functionality:
+   ```javascript
+   class YourModule {
+     // Your code
+   }
+   if (typeof module !== 'undefined' && module.exports) {
+     module.exports = { YourModule };
+   }
+   ```
+3. Add script tag to `index.html`:
+   ```html
+   <script src="src/js/your-module.js"></script>
+   ```
+4. Use in `app.js`:
+   ```javascript
+   this.yourModule = new YourModule();
+   ```
+
+### Adding a New Backend Module
+
+1. Create module in `backend/src/your_module.py`
+2. Import in `main.py`:
+   ```python
+   from .your_module import YourClass
+   ```
+3. Use in routes or data processing
+
+## 🤝 Contributing
+
+Contributions are welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Code Style
+
+- **JavaScript**: Use consistent naming (camelCase for functions/variables)
+- **Python**: Follow PEP 8 style guide
+- **Comments**: Write clear, descriptive comments
+- **Documentation**: Update docs when adding features
+
+## 🐛 Troubleshooting
+
+### Backend Won't Start
+```bash
+# Check Python version
+python --version  # Should be 3.8+
+
+# Reinstall dependencies
+cd backend
+pip install -r requirements.txt --upgrade
 ```
 
-### Performance
-- Map rendering: 60 FPS via Leaflet.js
-- Animation: RequestAnimationFrame for smooth updates
-- Chart rendering: Chart.js with optimized datasets (pointRadius: 0 for large datasets)
+### Port 8000 Already in Use
+```bash
+# Windows
+netstat -ano | findstr :8000
+taskkill /PID <PID> /F
 
-## Troubleshooting
+# Mac/Linux
+lsof -ti:8000 | xargs kill -9
+```
 
-### Backend Connection Issues
-- Ensure Python 3.8+ is installed
-- Check if port 8000 is available
-- Restart the application
-
-### CSV Parsing Errors
-- Verify CSV has tab-separated values
-- Check for required columns
-- Ensure Position format is "latitude,longitude"
-
-### Animation Not Smooth
-- Reduce animation speed multiplier
+### Animation is Laggy
+- Reduce speed multiplier
 - Close other applications
 - Check system resources
 
-## Dependencies
+## 📄 License
 
-### Frontend
-- Electron 28.0.0
-- Leaflet.js 1.9.4
-- Chart.js 4.4.1
-- Axios 1.6.2
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-### Backend
-- FastAPI 0.109.0
-- Uvicorn 0.27.0
-- Pandas 2.1.4
-- NumPy 1.26.3
+## 🙏 Acknowledgments
 
-## License
+- [Leaflet.js](https://leafletjs.com/) - Interactive maps
+- [Chart.js](https://www.chartjs.org/) - Beautiful charts
+- [FastAPI](https://fastapi.tiangolo.com/) - Modern Python web framework
+- [Electron](https://www.electronjs.org/) - Desktop application framework
 
-MIT License - See LICENSE file for details
+## 📞 Support
 
-## Contributing
+- **Issues**: [GitHub Issues](https://github.com/Darshit-sopho/flight-track-viewer-python/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/Darshit-sopho/flight-track-viewer-python/discussions)
+- **Documentation**: [docs/](docs/)
 
-Contributions are welcome! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Submit a pull request
-
-## Support
-
-For issues or questions:
-- Open an issue on GitHub
-- Check the documentation
-- Review closed issues for similar problems
-
-## Roadmap
+## 🗺️ Roadmap
 
 - [ ] Video export of flight animation
 - [ ] Multiple flight comparison
-- [ ] 3D visualization option
+- [ ] 3D visualization mode
 - [ ] GPX/KML file support
-- [ ] Real-time flight tracking integration
+- [ ] Real-time tracking integration
 - [ ] Weather overlay
-- [ ] Airports and airspace database
+- [ ] Airport database integration
+- [ ] Web-based version
 
 ---
 
-**Made with ✈️ by Flight Track Viewer Team**
+**Made with ✈️ by the Flight Track Viewer Team**
+
+[⭐ Star this project](https://github.com/Darshit-sopho/flight-track-viewer-python) if you find it useful!

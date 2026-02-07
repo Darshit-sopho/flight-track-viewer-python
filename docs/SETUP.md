@@ -14,20 +14,42 @@ A complete desktop application for visualizing flight trajectories with:
 
 ```
 flight-track-viewer/
-├── backend/
-│   ├── main.py              ← Python FastAPI server
-│   └── requirements.txt      ← Python dependencies
-├── main.js                   ← Electron main process
-├── renderer.js               ← Frontend logic
-├── index.html                ← UI layout
-├── styles.css                ← Styling
-├── package.json              ← Node.js config
-├── sample_flight.csv         ← Test data
-├── README.md                 ← Main docs
-├── QUICKSTART.md             ← Quick setup guide
-├── PROJECT_STRUCTURE.md      ← Technical details
-├── DEPLOYMENT.md             ← Build & distribute
-└── .gitignore                ← Git ignore rules
+├── frontend/                    # Frontend application
+│   ├── src/
+│   │   ├── js/                  # JavaScript modules
+│   │   │   ├── app.js           # Main application coordinator
+│   │   │   ├── map-manager.js   # Map and marker management
+│   │   │   ├── chart-manager.js # Chart creation and updates
+│   │   │   └── animation-controller.js # Animation logic
+│   │   └── css/
+│   │       └── styles.css       # Application styles
+│   ├── public/                  # Static assets
+│   └── index.html               # Main HTML file
+│
+├── backend/                     # Python FastAPI backend
+│   ├── src/
+│   │   ├── main.py              # FastAPI app and routes
+│   │   ├── data_processor.py    # CSV processing pipeline
+│   │   ├── flight_utils.py      # Calculation utilities
+│   │   └── __init__.py          # Package initialization
+│   ├── run.py                   # Backend entry point
+│   └── requirements.txt         # Python dependencies
+│
+├── docs/                        # Documentation
+│   ├── README.md                # Detailed documentation
+│   ├── QUICKSTART.md            # Quick setup guide
+│   ├── PROJECT_STRUCTURE.md     # Technical details
+│   ├── DEPLOYMENT.md            # Build and distribution
+│   ├── CHANGELOG.md             # Version history
+│   └── SETUP.md                 # Setup instructions
+│
+├── assets/                      # Application assets
+│   └── icon.png                 # App icon
+│
+├── main.js                      # Electron main process
+├── package.json                 # Node.js configuration
+├── sample_flight.csv            # Sample data for testing
+└── README.md                    # This file
 ```
 
 ## 🏃 Quick Start (5 Minutes)

@@ -70,32 +70,6 @@ cd backend
 pip install -r requirements.txt --upgrade
 ```
 
-## Architecture Overview
-
-```
-┌─────────────────────────────────────────┐
-│         Electron Main Process           │
-│  ┌──────────────────────────────────┐  │
-│  │   Python Backend (FastAPI)       │  │
-│  │   Port: 8000                     │  │
-│  │   - CSV Processing               │  │
-│  │   - Flight Analysis              │  │
-│  │   - Heading Calculations         │  │
-│  └──────────────────────────────────┘  │
-└─────────────────────────────────────────┘
-                    │ HTTP/JSON
-                    ▼
-┌─────────────────────────────────────────┐
-│      Electron Renderer Process          │
-│  ┌──────────────────────────────────┐  │
-│  │   HTML/CSS/JavaScript            │  │
-│  │   - Leaflet.js (Map)             │  │
-│  │   - Chart.js (Plots)             │  │
-│  │   - Animation Engine             │  │
-│  └──────────────────────────────────┘  │
-└─────────────────────────────────────────┘
-```
-
 ## File Structure
 
 ```
