@@ -2,10 +2,8 @@
 
 A modular desktop application for visualizing and analyzing flight trajectories from FlightRadar24 CSV data.
 
-[![Version](https://img.shields.io/badge/version-1.0.1-blue.svg)](https://github.com/Darshit-sopho/flight-track-viewer-python)
+[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/Darshit-sopho/flight-track-viewer-python)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-
-![Flight Track Viewer](docs/screenshot.png)
 
 ## 🌟 Features
 
